@@ -11,16 +11,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import cm.project.cmproject.ui.LoginScreen
+import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val auth: FirebaseAuth= Firebase.auth
+        FirebaseApp.initializeApp(this)
+        val auth: FirebaseAuth = Firebase.auth
 
         enableEdgeToEdge()
         setContent {
@@ -32,10 +34,8 @@ class MainActivity : ComponentActivity() {
                             name = "Android",
                             modifier = Modifier.padding(innerPadding)
                         )
-                    }else{
-                        LoginScreen(
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                    } else {
+                        AuthTabs(modifier = Modifier.padding(innerPadding))
                     }
 
                 }
