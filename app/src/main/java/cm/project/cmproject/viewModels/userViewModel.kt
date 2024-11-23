@@ -25,6 +25,16 @@ class UserViewModel: ViewModel(){
             }
     }
 
+    fun register(email:String, password:String, fullName:String, phoneNumber:String, address:String, role:String){}
+
+    fun register(email:String, password:String, fullName:String, phoneNumber:String, address:String, role:String, license:String, vehicleType:String){}
+
+    fun logout(){
+        FirebaseAuth.getInstance().signOut()
+        _state.value=null
+        _errorMessage.value=null
+    }
+
     private fun fetchUserTable(uid:String){
         Firebase.firestore.collection("users").document(uid).get().addOnSuccessListener { snapshot ->
             val user = snapshot.toObject<User>()

@@ -3,7 +3,6 @@ package cm.project.cmproject.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -11,14 +10,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -52,7 +49,7 @@ import cm.project.cmproject.viewModels.UserViewModel
 fun AuthTabs(modifier: Modifier = Modifier) {
     val viewModel: UserViewModel = viewModel()
     val (selectedTabIndex, setSelectedTabIndex) = rememberSaveable {
-        mutableIntStateOf(1)
+        mutableIntStateOf(0)
     }
 
     Scaffold(
@@ -87,9 +84,9 @@ fun AuthTabs(modifier: Modifier = Modifier) {
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
     var email: String by remember { mutableStateOf("") }
     var password: String by remember { mutableStateOf("") }
-    val validFields = remember { mutableStateListOf<Boolean>(false, false) }
+    val validFields = remember { mutableStateListOf(false, false) }
 
-    ElevatedCard(modifier=modifier.padding(10.dp)) {
+    ElevatedCard(modifier = modifier.padding(10.dp)) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -140,18 +137,18 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
     var fullName: String by remember { mutableStateOf("") }
     var phoneNumber: String by remember { mutableStateOf("") }
     var address: String by remember { mutableStateOf("") }
-    var role: String by remember { mutableStateOf("user") }
+    var role: String by remember { mutableStateOf("customer") }
 
     var license: String by remember { mutableStateOf("") }
     var vehicleType: String by remember { mutableStateOf("") }
 
     val universalValidFields =
-        remember { mutableStateListOf<Boolean>(false, false, false, false, false) }
+        remember { mutableStateListOf(false, false, false, false, false) }
     val driverValidFields =
-        remember { mutableStateListOf<Boolean>(false, false, false, false, false) }
+        remember { mutableStateListOf(false, false) }
 
 
-    Column(modifier=modifier){
+    Column(modifier = modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         ErrorMessage(viewModel)
 
         Row(
@@ -161,8 +158,8 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                RadioButton(selected = role == "user", onClick = { role = "user" })
-                Text("User")
+                RadioButton(selected = role == "customer", onClick = { role = "customer" })
+                Text("Customer")
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -172,13 +169,14 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
             }
         }
 
-        ElevatedCard(modifier=Modifier.padding(10.dp)) {
+        ElevatedCard(modifier = Modifier.padding(10.dp)) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 OutlinedTextField(
+                    modifier = Modifier.padding(top = 5.dp),
                     value = email,
                     onValueChange = {
                         email = it; universalValidFields[0] = email.contains("@")
@@ -216,13 +214,18 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                     visualTransformation = PasswordVisualTransformation()
                 )
                 InvalidFieldsMessage(universalValidFields, 1, "Passwords must match")
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
 
 
-        ElevatedCard(modifier=Modifier.padding(10.dp)) {
-            Column (modifier=Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally){
+        ElevatedCard(modifier = Modifier.padding(10.dp)) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 OutlinedTextField(
+                    modifier = Modifier.padding(top = 5.dp),
                     value = fullName,
                     onValueChange = {
                         fullName = it; universalValidFields[2] = fullName.isNotEmpty()
@@ -231,7 +234,80 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 )
 
                 InvalidFieldsMessage(universalValidFields, 2, "Please enter your full name")
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = phoneNumber,
+                    onValueChange = {
+                        phoneNumber = it; universalValidFields[3] = phoneNumber.isNotEmpty()
+                    },
+                    label = { Text("Phone Number") }
+                )
+                InvalidFieldsMessage(universalValidFields, 3, "Please enter your phone number")
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = {
+                        address = it; universalValidFields[4] = address.isNotEmpty()
+                    },
+                    label = { Text("Address") }
+                )
+                InvalidFieldsMessage(universalValidFields, 4, "Please enter your address")
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (role == "driver") {
+                    OutlinedTextField(
+                        value = license,
+                        onValueChange = { license = it },
+                        label = { Text("License") }
+                    )
+                    InvalidFieldsMessage(driverValidFields, 0, "Please enter your license number")
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedTextField(
+                        value = vehicleType,
+                        onValueChange = { vehicleType = it },
+                        label = { Text("Vehicle Type") }
+                    )
+                    InvalidFieldsMessage(
+                        driverValidFields,
+                        1,
+                        "Please enter your vehicle type"
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        if (role == "customer") {
+            Button(
+                enabled = universalValidFields.all { it }, //this way, you can only submit if all fields are valid
+                onClick = {
+                    viewModel.register(email, password, fullName, phoneNumber, address, role)
+                }, content = { Text("Register") })
+        } else {
+            Button(
+                enabled = universalValidFields.all { it } && driverValidFields.all { it }, //this way, you can only submit if all fields are valid
+                onClick = {
+                    viewModel.register(
+                        email,
+                        password,
+                        fullName,
+                        phoneNumber,
+                        address,
+                        role,
+                        license,
+                        vehicleType
+                    )
+                }, content = { Text("Register") }
+            )
         }
     }
 }
