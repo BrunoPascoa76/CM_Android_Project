@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "885515104681",
+    "project_id": "cm-android-2024",
+    "storage_bucket": "cm-android-2024.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885515104681:android:2c0ff523a3a9c0dc39d4b8",
+        "android_client_info": {
+          "package_name": "cm.project.cmproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEumipHVA4NOv9U_MBOHnayUNkvZ43F_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
