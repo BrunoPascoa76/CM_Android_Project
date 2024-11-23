@@ -1,7 +1,6 @@
 package cm.project.cmproject.viewModels
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
