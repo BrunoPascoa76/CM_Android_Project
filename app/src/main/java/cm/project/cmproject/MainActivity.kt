@@ -11,7 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.ui.AuthTabs
+import cm.project.cmproject.ui.HomeScreen
+import cm.project.cmproject.ui.Navbar
+import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -29,15 +36,7 @@ class MainActivity : ComponentActivity() {
             CMProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val user = auth.currentUser
-                    if (user != null) {
-                        Greeting(
-                            name = "Android",
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    } else {
-                        AuthTabs(modifier = Modifier.padding(innerPadding))
-                    }
-
+                    AppNavHost(modifier = Modifier.padding(innerPadding), startDestination = if (user == null) "auth" else "home")
                 }
             }
         }
@@ -45,17 +44,20 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CMProjectTheme {
-        Greeting("Android")
+fun AppNavHost(modifier: Modifier = Modifier, navController: NavHostController = rememberNavController(),startDestination: String = "auth") {
+    NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
+        composable("auth") {
+            AuthTabs()
+        }
+        composable("home") {
+            Navbar(navController){
+                HomeScreen()
+            }
+        }
+        composable("Profile"){
+            Navbar(navController){
+                ProfileScreen()
+            }
+        }
     }
 }
