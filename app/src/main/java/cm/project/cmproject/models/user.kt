@@ -5,5 +5,9 @@ data class User(
     val givenName:String,
     val email: String,
     val phoneNumber: String,
-    val role: String
+    val address: String,
+    val role: String="customer",
+
+    val license: String="",
+    val vehicleType: String=""
 )

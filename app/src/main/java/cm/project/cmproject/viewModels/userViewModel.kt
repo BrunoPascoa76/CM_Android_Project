@@ -30,6 +30,7 @@ class UserViewModel: ViewModel(){
         Firebase.firestore.collection("users").document(uid).get().addOnSuccessListener { snapshot ->
             val user = snapshot.toObject<User>()
             _state.value = user
+            _errorMessage.value = null
         }.addOnFailureListener { exception ->
             _errorMessage.value = exception.message
         }
