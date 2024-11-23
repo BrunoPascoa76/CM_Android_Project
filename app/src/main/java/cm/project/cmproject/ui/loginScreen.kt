@@ -143,7 +143,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
     var vehicleType: String by remember { mutableStateOf("") }
 
     val universalValidFields =
-        remember { mutableStateListOf(false, false, false, false, false) }
+        remember { mutableStateListOf(false, false, false, false, false,false) }
     val driverValidFields =
         remember { mutableStateListOf(false, false) }
 
@@ -191,7 +191,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                     value = password,
                     onValueChange = {
                         password = it; universalValidFields[1] =
-                        password.length >= 8 && password == confirmPassword
+                        password.length >= 8
                     }, //must be at least 8 characters
                     label = { Text("Password") },
                     visualTransformation = PasswordVisualTransformation()
@@ -207,13 +207,12 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = {
-                        confirmPassword = it; universalValidFields[1] =
-                        password.length >= 8 && password == confirmPassword
+                        confirmPassword = it; universalValidFields[2] = password == confirmPassword
                     },
                     label = { Text("Confirm Password") },
                     visualTransformation = PasswordVisualTransformation()
                 )
-                InvalidFieldsMessage(universalValidFields, 1, "Passwords must match")
+                InvalidFieldsMessage(universalValidFields, 2, "Passwords must match")
                 Spacer(modifier = Modifier.height(10.dp))
             }
         }
@@ -228,41 +227,41 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                     modifier = Modifier.padding(top = 5.dp),
                     value = fullName,
                     onValueChange = {
-                        fullName = it; universalValidFields[2] = fullName.isNotEmpty()
+                        fullName = it; universalValidFields[3] = fullName.isNotEmpty()
                     },
                     label = { Text("Full Name") }
                 )
 
-                InvalidFieldsMessage(universalValidFields, 2, "Please enter your full name")
+                InvalidFieldsMessage(universalValidFields, 3, "Please enter your full name")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = phoneNumber,
                     onValueChange = {
-                        phoneNumber = it; universalValidFields[3] = phoneNumber.isNotEmpty()
+                        phoneNumber = it; universalValidFields[4] = phoneNumber.isNotEmpty()
                     },
                     label = { Text("Phone Number") }
                 )
-                InvalidFieldsMessage(universalValidFields, 3, "Please enter your phone number")
+                InvalidFieldsMessage(universalValidFields, 4, "Please enter your phone number")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = address,
                     onValueChange = {
-                        address = it; universalValidFields[4] = address.isNotEmpty()
+                        address = it; universalValidFields[5] = address.isNotEmpty()
                     },
                     label = { Text("Address") }
                 )
-                InvalidFieldsMessage(universalValidFields, 4, "Please enter your address")
+                InvalidFieldsMessage(universalValidFields, 5, "Please enter your address")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 if (role == "driver") {
                     OutlinedTextField(
                         value = license,
-                        onValueChange = { license = it },
+                        onValueChange = { license = it; driverValidFields[0]=license.isNotEmpty() },
                         label = { Text("License") }
                     )
                     InvalidFieldsMessage(driverValidFields, 0, "Please enter your license number")
@@ -271,7 +270,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
 
                     OutlinedTextField(
                         value = vehicleType,
-                        onValueChange = { vehicleType = it },
+                        onValueChange = { vehicleType = it; driverValidFields[1]=vehicleType.isNotEmpty() },
                         label = { Text("Vehicle Type") }
                     )
                     InvalidFieldsMessage(

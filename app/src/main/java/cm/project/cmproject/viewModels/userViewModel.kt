@@ -52,6 +52,13 @@ class UserViewModel : ViewModel() {
         license: String,
         vehicleType: String
     ) {
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,password)
+            .addOnSuccessListener { task ->
+                val user = User(task.user!!.uid,fullName,email,phoneNumber,address,role,license,vehicleType)
+                createUserTable(user)
+            }.addOnFailureListener() { exception ->
+                _errorMessage.value=exception.message
+            }
     }
 
     fun logout() {
@@ -60,7 +67,7 @@ class UserViewModel : ViewModel() {
         _errorMessage.value = null
     }
 
-    private fun fetchUserTable(uid: String) {
+    fun fetchUserTable(uid: String) {
         Firebase.firestore.collection("users").document(uid).get()
             .addOnSuccessListener { snapshot ->
                 val user = snapshot.toObject<User>()

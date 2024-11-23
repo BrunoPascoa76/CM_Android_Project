@@ -7,10 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,6 +19,7 @@ import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.theme.CMProjectTheme
+import cm.project.cmproject.viewModels.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -34,8 +34,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CMProjectTheme {
+                val user=auth.currentUser
+
+                if(user!=null){
+                    val viewModel: UserViewModel = viewModel()
+                    viewModel.fetchUserTable(user.uid)
+                }
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val user = auth.currentUser
                     AppNavHost(modifier = Modifier.padding(innerPadding), startDestination = if (user == null) "auth" else "home")
                 }
             }
@@ -54,7 +60,7 @@ fun AppNavHost(modifier: Modifier = Modifier, navController: NavHostController =
                 HomeScreen()
             }
         }
-        composable("Profile"){
+        composable("profile"){
             Navbar(navController){
                 ProfileScreen()
             }
