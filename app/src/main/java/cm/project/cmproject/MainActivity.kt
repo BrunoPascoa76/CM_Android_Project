@@ -34,15 +34,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CMProjectTheme {
-                val user=auth.currentUser
+                val user = auth.currentUser
 
-                if(user!=null){
-                    val viewModel: UserViewModel = viewModel()
+                val viewModel: UserViewModel = viewModel()
+
+                if (user != null) {
                     viewModel.fetchUserTable(user.uid)
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavHost(modifier = Modifier.padding(innerPadding), startDestination = if (user == null) "auth" else "home")
+                    AppNavHost(
+                        modifier = Modifier.padding(innerPadding),
+                        startDestination = if (user == null) "auth" else "home"
+                    )
                 }
             }
         }
@@ -50,19 +54,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavHost(modifier: Modifier = Modifier, navController: NavHostController = rememberNavController(),startDestination: String = "auth") {
-    NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
+fun AppNavHost(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = "auth"
+) {
+    val viewModel: UserViewModel = viewModel()
+    //declare any viewModels here
+
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
         composable("auth") {
-            AuthTabs()
+            AuthTabs(navController = navController, viewModel = viewModel)
         }
         composable("home") {
-            Navbar(navController){
-                HomeScreen()
+            Navbar(navController) {
+                HomeScreen(viewModel=viewModel)
             }
         }
-        composable("profile"){
-            Navbar(navController){
-                ProfileScreen()
+        composable("profile") {
+            Navbar(navController) {
+                ProfileScreen(viewModel=viewModel)
             }
         }
     }

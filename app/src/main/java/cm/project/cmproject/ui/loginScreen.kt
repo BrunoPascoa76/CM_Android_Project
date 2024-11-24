@@ -23,6 +23,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -39,17 +40,27 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.viewModels.UserViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun AuthTabs(modifier: Modifier = Modifier) {
-    val viewModel: UserViewModel = viewModel()
+fun AuthTabs(modifier: Modifier = Modifier, navController: NavHostController = rememberNavController(), viewModel: UserViewModel = viewModel()) {
     val (selectedTabIndex, setSelectedTabIndex) = rememberSaveable {
         mutableIntStateOf(0)
+    }
+
+    LaunchedEffect(viewModel.state.collectAsState().value){
+        viewModel.state.collect{ user->
+            if(user!=null){
+                navController.navigate("home")
+            }
+        }
     }
 
     Scaffold(
@@ -217,6 +228,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
             }
         }
 
+        Text("Account details", fontSize = 24.sp)
 
         ElevatedCard(modifier = Modifier.padding(10.dp)) {
             Column(
