@@ -1,5 +1,6 @@
 package cm.project.cmproject
 
+import OrderViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.Navbar
+import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.viewModels.UserViewModel
@@ -60,7 +62,7 @@ fun AppNavHost(
     startDestination: String = "auth"
 ) {
     val viewModel: UserViewModel = viewModel()
-    //declare any viewModels here
+    val orderViewModel: OrderViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -78,6 +80,11 @@ fun AppNavHost(
         composable("profile") {
             Navbar(navController) {
                 ProfileScreen(viewModel=viewModel, navController = navController)
+            }
+        }
+        composable("order") {
+            Navbar(navController) {
+                OrderScreen(viewModel=orderViewModel)
             }
         }
     }

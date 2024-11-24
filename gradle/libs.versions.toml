@@ -12,6 +12,10 @@ composeBom = "2024.04.01"
 lifecycleViewmodelCompose = "2.8.7"
 navigationCompose = "2.8.4"
 vectordrawable = "1.2.0"
+googleMaps = "19.0.0" # Google Maps SDK
+googleMapsCompose = "2.13.0" # Maps Compose
+androidMapsUtils = "2.2.3" # Maps Utils
+accompanistPermissions = "0.30.1" # Permissions Accompanist Library
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,7 +39,10 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
-
+google-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "googleMaps" }
+google-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "googleMapsCompose" }
+android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
+google-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

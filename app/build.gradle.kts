@@ -75,4 +75,8 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.vectordrawable)
+    implementation(libs.google.maps)
+    implementation(libs.google.maps.compose)
+    implementation(libs.android.maps.utils)
+    implementation(libs.google.accompanist.permissions)
 }

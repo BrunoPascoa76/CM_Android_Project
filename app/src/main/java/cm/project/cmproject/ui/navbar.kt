@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -30,6 +31,12 @@ fun Navbar(
                     label = { Text("Home") },
                     selected = currentRoute == "home",
                     onClick = { navController.navigate("home") }
+                )
+                NavigationBarItem(
+                    icon={Icon(imageVector = Icons.Filled.LocationOn, contentDescription = "order")},
+                    label = { Text("Order") },
+                    selected = currentRoute == "order",
+                    onClick = { navController.navigate("order") }
                 )
                 NavigationBarItem(
                     icon={Icon(imageVector = Icons.Filled.Person, contentDescription = "Profile")},
