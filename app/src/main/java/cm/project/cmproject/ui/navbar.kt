@@ -41,7 +41,6 @@ fun Navbar(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            print(currentRoute)
             content()
         }
     }

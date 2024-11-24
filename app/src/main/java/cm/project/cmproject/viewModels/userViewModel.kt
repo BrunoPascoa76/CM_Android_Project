@@ -1,5 +1,6 @@
 package cm.project.cmproject.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import cm.project.cmproject.models.User
 import com.google.firebase.Firebase
@@ -52,12 +53,21 @@ class UserViewModel : ViewModel() {
         license: String,
         vehicleType: String
     ) {
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,password)
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { task ->
-                val user = User(task.user!!.uid,fullName,email,phoneNumber,address,role,license,vehicleType)
+                val user = User(
+                    task.user!!.uid,
+                    fullName,
+                    email,
+                    phoneNumber,
+                    address,
+                    role,
+                    license,
+                    vehicleType
+                )
                 createUserTable(user)
             }.addOnFailureListener() { exception ->
-                _errorMessage.value=exception.message
+                _errorMessage.value = exception.message
             }
     }
 
@@ -71,11 +81,12 @@ class UserViewModel : ViewModel() {
         Firebase.firestore.collection("users").document(uid).get()
             .addOnSuccessListener { snapshot ->
                 val user = snapshot.toObject<User>()
+                Log.d("UserViewModel", "User created successfully")
                 _state.value = user
                 _errorMessage.value = null
             }.addOnFailureListener { exception ->
-            _errorMessage.value = exception.message
-        }
+                _errorMessage.value = exception.message
+            }
     }
 
     private fun createUserTable(user: User) {
@@ -83,8 +94,29 @@ class UserViewModel : ViewModel() {
             .addOnSuccessListener {
                 _state.value = user
                 _errorMessage.value = null
+                Log.d("UserViewModel", "User created successfully")
             }.addOnFailureListener { exception ->
                 _errorMessage.value = exception.message
             }
+    }
+
+    fun update(user: User) {
+        if( _state.value==user ){
+            return
+        }
+
+        if(_state.value!=null && _state.value?.email!=user.email){
+            FirebaseAuth.getInstance().currentUser!!.verifyBeforeUpdateEmail(user.email)
+        }
+
+        if (user.uid.isNotEmpty()) {
+            Firebase.firestore.collection("users").document(user.uid).set(user)
+                .addOnSuccessListener {
+                    _state.value = user
+                    _errorMessage.value = null
+                }.addOnFailureListener { exception ->
+                    _errorMessage.value = exception.message
+                }
+        }
     }
 }
