@@ -77,7 +77,7 @@ fun AppNavHost(
         }
         composable("profile") {
             Navbar(navController) {
-                ProfileScreen(viewModel=viewModel)
+                ProfileScreen(viewModel=viewModel, navController = navController)
             }
         }
     }

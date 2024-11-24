@@ -42,11 +42,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
 
 @Composable
 @Preview(showBackground = true)
-fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = viewModel()) {
+fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = viewModel(), navController: NavHostController = rememberNavController()) {
     val user by viewModel.state.collectAsStateWithLifecycle()
 
     var email: String by remember { mutableStateOf(user?.email ?: "") }
@@ -137,6 +139,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     OutlinedTextField(
+                        maxLines = 1,
                         label = { Text("Email") },
                         value = email,
                         onValueChange = {
@@ -148,6 +151,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
+                        maxLines = 1,
                         label = { Text("Full Name") },
                         value = fullName,
                         onValueChange = {
@@ -159,6 +163,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
+                        maxLines = 1,
                         label = { Text("Phone Number") },
                         value = phoneNumber,
                         onValueChange = {
@@ -185,6 +190,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     if (user?.role == "driver") {
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
+                            maxLines = 1,
                             label = { Text("License") },
                             value = license,
                             onValueChange = {
@@ -196,6 +202,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                         Spacer(modifier = Modifier.height(10.dp))
 
                         OutlinedTextField(
+                            maxLines = 1,
                             label = { Text("Vehicle Type") },
                             value = vehicleType,
                             onValueChange = {
@@ -243,6 +250,16 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     }
                 }
             }
+        }
+
+        ElevatedButton(
+            enabled = validFieldsUniversal.all { it } && validFieldsDriver.all { it },
+            onClick = {
+                viewModel.logout()
+                navController.navigate("auth")
+            }
+        ) {
+            Text("Logout")
         }
     }
 }
