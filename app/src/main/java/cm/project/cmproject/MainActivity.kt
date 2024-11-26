@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.ui.AuthTabs
+import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.ProfileScreen
@@ -59,7 +60,7 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = "auth"
 ) {
-    val viewModel: UserViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     //declare any viewModels here
 
     NavHost(
@@ -68,17 +69,21 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable("auth") {
-            AuthTabs(navController = navController, viewModel = viewModel)
+            AuthTabs(navController = navController, viewModel = userViewModel)
         }
         composable("home") {
             Navbar(navController) {
-                HomeScreen(viewModel=viewModel)
+                HomeScreen(viewModel=userViewModel)
             }
         }
         composable("profile") {
             Navbar(navController) {
-                ProfileScreen(viewModel=viewModel, navController = navController)
+                ProfileScreen(viewModel=userViewModel, navController = navController)
             }
+        }
+        composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
+            val deliveryId = backStackEntry.arguments?.getString("deliveryId")
+            DeliveryDetailsScreen(deliveryId = deliveryId, navController = navController)
         }
     }
 }
