@@ -16,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 @Preview(showBackground = true)
 fun DeliveryDetailsScreen(modifier: Modifier =Modifier, deliveryId: String? = null, navController: NavController=rememberNavController()) {
-    val delivery:Delivery?
 
     Scaffold(
         modifier=modifier,
