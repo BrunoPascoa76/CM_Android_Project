@@ -139,7 +139,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     OutlinedTextField(
-                        maxLines = 1,
+                        singleLine = true,
                         label = { Text("Email") },
                         value = email,
                         onValueChange = {
@@ -151,7 +151,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
-                        maxLines = 1,
+                        singleLine = true,
                         label = { Text("Full Name") },
                         value = fullName,
                         onValueChange = {
@@ -163,7 +163,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
-                        maxLines = 1,
+                        singleLine = true,
                         label = { Text("Phone Number") },
                         value = phoneNumber,
                         onValueChange = {
@@ -190,7 +190,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     if (user?.role == "driver") {
                         Spacer(modifier = Modifier.height(10.dp))
                         OutlinedTextField(
-                            maxLines = 1,
+                            singleLine = true,
                             label = { Text("License") },
                             value = license,
                             onValueChange = {
@@ -202,7 +202,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                         Spacer(modifier = Modifier.height(10.dp))
 
                         OutlinedTextField(
-                            maxLines = 1,
+                            singleLine = true,
                             label = { Text("Vehicle Type") },
                             value = vehicleType,
                             onValueChange = {

@@ -1,5 +1,6 @@
 package cm.project.cmproject
 
+import OrderViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.Navbar
+import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.viewModels.UserViewModel
@@ -60,6 +62,7 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = "auth"
 ) {
+    val orderViewModel: OrderViewModel = viewModel()
     val userViewModel: UserViewModel = viewModel()
     //declare any viewModels here
 
@@ -84,6 +87,11 @@ fun AppNavHost(
         composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
             val deliveryId = backStackEntry.arguments?.getString("deliveryId")
             DeliveryDetailsScreen(deliveryId = deliveryId, navController = navController)
+        }
+        composable("order") {
+            Navbar(navController) {
+                OrderScreen(viewModel=orderViewModel)
+            }
         }
     }
 }
