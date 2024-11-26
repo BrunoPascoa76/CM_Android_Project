@@ -107,7 +107,7 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
 
 
             OutlinedTextField(
-                maxLines = 1,
+                singleLine = true,
                 value = email,
                 onValueChange = {
                     email = it; validFields[0] = email.contains("@")
@@ -120,7 +120,7 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
             Spacer(modifier = Modifier.height(20.dp))
 
             OutlinedTextField(
-                maxLines = 1,
+                singleLine = true,
                 value = password,
                 onValueChange = {
                     password = it; validFields[1] = password.length >= 8
@@ -189,7 +189,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 verticalArrangement = Arrangement.Center
             ) {
                 OutlinedTextField(
-                    maxLines = 1,
+                    singleLine = true,
                     modifier = Modifier.padding(top = 5.dp),
                     value = email,
                     onValueChange = {
@@ -202,7 +202,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 OutlinedTextField(
-                    maxLines = 1,
+                    singleLine = true,
                     value = password,
                     onValueChange = {
                         password = it; universalValidFields[1] =
@@ -220,7 +220,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    maxLines = 1,
+                    singleLine = true,
                     value = confirmPassword,
                     onValueChange = {
                         confirmPassword = it; universalValidFields[2] = password == confirmPassword
@@ -241,7 +241,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 OutlinedTextField(
-                    maxLines = 1,
+                    singleLine = true,
                     modifier = Modifier.padding(top = 5.dp),
                     value = fullName,
                     onValueChange = {
@@ -255,7 +255,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    maxLines = 1,
+                    singleLine = true,
                     value = phoneNumber,
                     onValueChange = {
                         phoneNumber = it; universalValidFields[4] = phoneNumber.isNotEmpty()
@@ -279,7 +279,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
 
                 if (role == "driver") {
                     OutlinedTextField(
-                        maxLines = 1,
+                        singleLine = true,
                         value = license,
                         onValueChange = { license = it; driverValidFields[0]=license.isNotEmpty() },
                         label = { Text("License") }
@@ -289,7 +289,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
-                        maxLines = 1,
+                        singleLine = true,
                         value = vehicleType,
                         onValueChange = { vehicleType = it; driverValidFields[1]=vehicleType.isNotEmpty() },
                         label = { Text("Vehicle Type") }
