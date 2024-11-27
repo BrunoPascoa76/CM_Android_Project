@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.ui.theme.PlaceAnOrderScreenTheme
 
+/*
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+*/
 
 @Composable
 fun OrdersListScreen(modifier: Modifier = Modifier) {
