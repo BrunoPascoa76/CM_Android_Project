@@ -20,6 +20,7 @@ import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
+import cm.project.cmproject.ui.navigation.AppNavHost
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.viewModels.UserViewModel
 import com.google.firebase.Firebase
@@ -50,41 +51,6 @@ class MainActivity : ComponentActivity() {
                         startDestination = if (user == null) "auth" else "home"
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun AppNavHost(
-    modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = "auth"
-) {
-    val viewModel: UserViewModel = viewModel()
-    val orderViewModel: OrderViewModel = viewModel()
-
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        modifier = modifier
-    ) {
-        composable("auth") {
-            AuthTabs(navController = navController, viewModel = viewModel)
-        }
-        composable("home") {
-            Navbar(navController) {
-                HomeScreen(viewModel=viewModel)
-            }
-        }
-        composable("profile") {
-            Navbar(navController) {
-                ProfileScreen(viewModel=viewModel, navController = navController)
-            }
-        }
-        composable("order") {
-            Navbar(navController) {
-                OrderScreen(viewModel=orderViewModel)
             }
         }
     }
