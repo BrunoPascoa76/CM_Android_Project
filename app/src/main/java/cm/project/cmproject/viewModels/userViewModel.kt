@@ -1,14 +1,14 @@
 package cm.project.cmproject.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.User
-import com.google.firebase.Firebase
+import cm.project.cmproject.repositories.UserRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import cm.project.cmproject.repositories.Result
 
 class UserViewModel : ViewModel() {
     private val _state = MutableStateFlow<User?>(null)
@@ -77,27 +77,32 @@ class UserViewModel : ViewModel() {
         _errorMessage.value = null
     }
 
-    fun fetchUserTable(uid: String) {
-        Firebase.firestore.collection("users").document(uid).get()
-            .addOnSuccessListener { snapshot ->
-                val user = snapshot.toObject<User>()
-                Log.d("UserViewModel", "User created successfully")
-                _state.value = user
-                _errorMessage.value = null
-            }.addOnFailureListener { exception ->
-                _errorMessage.value = exception.message
+    private fun fetchUserTable(uid: String){
+        viewModelScope.launch{
+            when(val result= UserRepository().getUserById(uid)){
+                is Result.Success -> {
+                    _state.value = result.data
+                    _errorMessage.value = null
+                }
+                is Result.Error -> {
+                    _errorMessage.value = result.exception.message
+                }
             }
+        }
     }
 
     private fun createUserTable(user: User) {
-        Firebase.firestore.collection("users").document(user.uid).set(user)
-            .addOnSuccessListener {
-                _state.value = user
-                _errorMessage.value = null
-                Log.d("UserViewModel", "User created successfully")
-            }.addOnFailureListener { exception ->
-                _errorMessage.value = exception.message
+        viewModelScope.launch {
+            when (val result = UserRepository().insertUser(user)){
+                is Result.Success -> {
+                    _state.value = user
+                    _errorMessage.value = null
+                }
+                is Result.Error -> {
+                    _errorMessage.value = result.exception.message
+                }
             }
+        }
     }
 
     fun update(user: User) {
@@ -110,13 +115,17 @@ class UserViewModel : ViewModel() {
         }
 
         if (user.uid.isNotEmpty()) {
-            Firebase.firestore.collection("users").document(user.uid).set(user)
-                .addOnSuccessListener {
-                    _state.value = user
-                    _errorMessage.value = null
-                }.addOnFailureListener { exception ->
-                    _errorMessage.value = exception.message
+            viewModelScope.launch {
+                when (val result = UserRepository().updateUser(user)){
+                    is Result.Success -> {
+                        _state.value = user
+                        _errorMessage.value = null
+                    }
+                    is Result.Error -> {
+                        _errorMessage.value = result.exception.message
+                    }
                 }
+            }
         }
     }
 }
