@@ -1,7 +1,6 @@
 package cm.project.cmproject.repositories
 
 import cm.project.cmproject.models.Delivery
-import cm.project.cmproject.repositories.Result
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
