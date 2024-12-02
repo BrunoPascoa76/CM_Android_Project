@@ -1,6 +1,7 @@
 package cm.project.cmproject
 
 import OrderViewModel
+import QRCodeScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -100,6 +101,9 @@ fun AppNavHost(
             Navbar(navController) {
                 OrderScreen(viewModel=orderViewModel,navController=navController)
             }
+        }
+        composable("qrCode"){
+            QRCodeScreen(navController=navController, viewModel = deliveryViewModel)
         }
     }
 }

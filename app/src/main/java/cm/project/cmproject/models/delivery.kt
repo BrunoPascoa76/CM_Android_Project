@@ -8,5 +8,5 @@ data class Delivery(
     val parcel: Parcel,
     val status: String,
     val steps: List<Step>,
-    val completedSteps: List<Step>
+    val completedSteps: Int=0
 )

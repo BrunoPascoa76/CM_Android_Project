@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.models.Parcel
 import cm.project.cmproject.models.User
+import cm.project.cmproject.repositories.DeliveryRepository
 import cm.project.cmproject.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,7 +39,6 @@ class DeliveryViewModel : ViewModel() {
             "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
             Parcel(1, "Parcel"),
             "Pending",
-            listOf(),
             listOf()
         )
         /*
@@ -56,6 +56,21 @@ class DeliveryViewModel : ViewModel() {
         }
         */
         getRelatedUsers()
+    }
+
+    fun submitQRCode(result: String) {
+        if(_state.value?.deliveryId.toString() == result){
+            incrementDeliveryStatus()
+        }
+    }
+
+    fun incrementDeliveryStatus(){
+        if(_state.value!=null) {
+            _state.value= _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
+            viewModelScope.launch {
+                DeliveryRepository().updateDelivery(_state.value!!)
+            }
+        }
     }
 
     private fun getRelatedUsers() {
