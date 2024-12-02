@@ -22,6 +22,7 @@ import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.theme.CMProjectTheme
+import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -62,8 +63,9 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = "auth"
 ) {
-    val orderViewModel: OrderViewModel = viewModel()
+    val orderViewModel: OrderViewModel = viewModel() //TODO: change screens that use this to use DeliveryViewModel (will keep this for now until we no longer need mocks)
     val userViewModel: UserViewModel = viewModel()
+    val deliveryViewModel: DeliveryViewModel = viewModel()
     //declare any viewModels here
 
     NavHost(
@@ -85,8 +87,8 @@ fun AppNavHost(
             }
         }
         composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getString("deliveryId")
-            DeliveryDetailsScreen(deliveryId = deliveryId, navController = navController)
+            val deliveryId = backStackEntry.arguments?.getInt("deliveryId") ?: 0
+            DeliveryDetailsScreen(deliveryId = deliveryId, navController = navController, viewModel = deliveryViewModel)
         }
         composable("order") {
             Navbar(navController) {
