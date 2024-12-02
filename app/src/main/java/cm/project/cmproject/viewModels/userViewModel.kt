@@ -77,7 +77,7 @@ class UserViewModel : ViewModel() {
         _errorMessage.value = null
     }
 
-    private fun fetchUserTable(uid: String){
+    fun fetchUserTable(uid: String){
         viewModelScope.launch{
             when(val result= UserRepository().getUserById(uid)){
                 is Result.Success -> {

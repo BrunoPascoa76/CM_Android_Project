@@ -88,7 +88,7 @@ fun AppNavHost(
         }
         composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
             val deliveryId = backStackEntry.arguments?.getInt("deliveryId") ?: 0
-            DeliveryDetailsScreen(deliveryId = deliveryId, navController = navController, viewModel = deliveryViewModel)
+            DeliveryDetailsScreen(deliveryId = deliveryId, navController = navController, deliveryViewModel = deliveryViewModel)
         }
         composable("order") {
             Navbar(navController) {

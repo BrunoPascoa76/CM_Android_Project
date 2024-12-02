@@ -31,7 +31,16 @@ class DeliveryViewModel : ViewModel() {
         _errorMessage.value = null
 
         //TODO: comment this (and uncomment below) when we no longer need mocks (the user details, however, are unmocked)
-        _state.value = Delivery(deliveryId, "q6nH3mMR3jcKTa6nXNOrqneZZPA2", "q6nH3mMR3jcKTa6nXNOrqneZZPA2", "q6nH3mMR3jcKTa6nXNOrqneZZPA2", Parcel(1, "Parcel"), "Pending", listOf(), listOf())
+        _state.value = Delivery(
+            deliveryId,
+            "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
+            "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
+            "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
+            Parcel(1, "Parcel"),
+            "Pending",
+            listOf(),
+            listOf()
+        )
         /*
         viewModelScope.launch {
             when (val result = DeliveryRepository().getDeliveryById(deliveryId)) {
@@ -49,40 +58,50 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
-    private fun getRelatedUsers(){
-        if(_state.value==null){
-            _recipient.value=null
-            _sender.value=null
-            _driver.value=null
-        }else{
-            viewModelScope.launch {
-                when(val result= UserRepository().getUserById(_state.value!!.recipientId)){
+    private fun getRelatedUsers() {
+        viewModelScope.launch {
+            if (state.value?.recipientId != null) {
+                when (val result = UserRepository().getUserById(_state.value!!.recipientId!!)) {
                     is Result.Success -> {
                         _recipient.value = result.data
                         _errorMessage.value = null
                     }
+
                     is Result.Error -> {
                         _recipient.value = null
                     }
                 }
-                when(val result= UserRepository().getUserById(_state.value!!.senderId)) {
+            } else {
+                _recipient.value = null
+            }
+            if (state.value?.senderId != null) {
+                when (val result = UserRepository().getUserById(_state.value!!.senderId!!)) {
                     is Result.Success -> {
                         _sender.value = result.data
                         _errorMessage.value = null
                     }
+
                     is Result.Error -> {
                         _sender.value = null
                     }
                 }
-                when(val result= UserRepository().getUserById(_state.value!!.driverId)) {
+            } else {
+                _sender.value = null
+            }
+
+            if (_state.value?.driverId != null) {
+                when (val result = UserRepository().getUserById(_state.value!!.driverId!!)) {
                     is Result.Success -> {
                         _driver.value = result.data
                         _errorMessage.value = null
                     }
+
                     is Result.Error -> {
                         _driver.value = null
                     }
                 }
+            } else {
+                _driver.value = null
             }
         }
     }
