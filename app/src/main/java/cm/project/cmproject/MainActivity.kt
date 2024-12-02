@@ -92,7 +92,7 @@ fun AppNavHost(
         }
         composable("order") {
             Navbar(navController) {
-                OrderScreen(viewModel=orderViewModel)
+                OrderScreen(viewModel=orderViewModel,navController=navController)
             }
         }
     }

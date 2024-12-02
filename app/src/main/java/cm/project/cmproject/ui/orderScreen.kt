@@ -3,6 +3,7 @@ package cm.project.cmproject.ui
 import OrderViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,6 +13,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.maps.android.compose.*
 
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import cm.project.cmproject.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -22,7 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun OrderScreen(viewModel: OrderViewModel = viewModel()) {
+fun OrderScreen(viewModel: OrderViewModel = viewModel(),navController: NavController = rememberNavController()) {
     val orderState by viewModel.orderState.collectAsState()
 
     // Request location permissions dynamically
@@ -40,11 +46,27 @@ fun OrderScreen(viewModel: OrderViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         // Title
-        Text(
-            text = "Track the Order",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier=Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "Track the Order",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            //TODO: hide this if not a driver or if there's no delivery
+            ElevatedButton(onClick={
+                //TODO: have it fetch the driver's current delivery
+                navController.navigate("deliveryDetails/${123}")
+            }){
+                Row{
+                    Icon(imageVector= ImageVector.vectorResource(id = R.drawable.visibility_24px), contentDescription = "See more")
+                    Text("See more")
+                }
+            }
+        }
 
         // Tracking Info
         Column(modifier = Modifier.padding(bottom = 16.dp)) {

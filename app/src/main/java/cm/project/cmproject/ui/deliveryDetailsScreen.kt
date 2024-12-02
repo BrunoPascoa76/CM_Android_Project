@@ -109,7 +109,7 @@ fun OrderDetails(
             }
         }
         //TODO: add steps
-        if(user!=null && user!!.role=="customer"){
+        if(user!=null && user!!.role!="customer"){
             QrCode(deliveryId = delivery!!.deliveryId)
         }else{
             ElevatedButton(
