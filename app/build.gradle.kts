@@ -79,4 +79,10 @@ dependencies {
     implementation(libs.google.maps.compose)
     implementation(libs.android.maps.utils)
     implementation(libs.google.accompanist.permissions)
+
+    // Google Maps SDK for Android
+    implementation(libs.places)
+    //implementation(libs.play.services.maps)
+
+    implementation(libs.timber)
 }
