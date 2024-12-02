@@ -119,6 +119,7 @@ fun OrderDetails(
                 DetailsRow("Status", delivery?.status?:"Unknown")
                 if(recipient!=null)
                     DetailsRow("Recipient Name", recipient!!.fullName)
+                    DetailsRow("Recipient Address", recipient!!.address)
                 if(sender!=null) {
                     DetailsRow("Sender Name", sender!!.fullName)
                     DetailsRow("Sender Address", sender!!.address)

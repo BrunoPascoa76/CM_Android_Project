@@ -3,7 +3,6 @@ package cm.project.cmproject.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Delivery
-import cm.project.cmproject.models.Parcel
 import cm.project.cmproject.models.User
 import cm.project.cmproject.repositories.DeliveryRepository
 import cm.project.cmproject.repositories.UserRepository
@@ -30,18 +29,6 @@ class DeliveryViewModel : ViewModel() {
 
     fun fetchDelivery(deliveryId: Int) {
         _errorMessage.value = null
-
-        //TODO: comment this (and uncomment below) when we no longer need mocks (the user details, however, are unmocked)
-        _state.value = Delivery(
-            deliveryId,
-            "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
-            "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
-            "q6nH3mMR3jcKTa6nXNOrqneZZPA2",
-            Parcel(1, "Parcel"),
-            "Pending",
-            listOf()
-        )
-        /*
         viewModelScope.launch {
             when (val result = DeliveryRepository().getDeliveryById(deliveryId)) {
                 is Result.Success -> {
@@ -54,7 +41,6 @@ class DeliveryViewModel : ViewModel() {
                 }
             }
         }
-        */
         getRelatedUsers()
     }
 
