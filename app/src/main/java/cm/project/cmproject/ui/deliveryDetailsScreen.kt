@@ -130,7 +130,7 @@ fun OrderDetails(
             QrCode(deliveryId = delivery!!.deliveryId)
         }else{
             ElevatedButton(
-                onClick = {navController.navigate("order")}
+                onClick = {navController.navigate("qrCodeScanner")}
             ){
                 Row{
                     Icon(imageVector= ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px), contentDescription = "Scan QR Code")

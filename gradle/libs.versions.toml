@@ -1,4 +1,5 @@
 [versions]
+accompanistPermissionsVersion = "<latest_version>)"
 agp = "8.6.0"
 barcodeScanning = "17.3.0"
 cameraCore = "1.0.2"
@@ -22,6 +23,7 @@ androidMapsUtils = "2.2.3" # Maps Utils
 accompanistPermissions = "0.30.1" # Permissions Accompanist Library
 
 [libraries]
+accompanist-permissions-vlatestversion = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }

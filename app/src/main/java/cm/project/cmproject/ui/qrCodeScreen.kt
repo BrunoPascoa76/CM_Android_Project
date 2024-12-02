@@ -1,3 +1,5 @@
+package cm.project.cmproject.ui
+
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -6,7 +8,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -14,17 +18,38 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.viewModels.DeliveryViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun QRCodeScreen(viewModel: DeliveryViewModel, navController: NavController=rememberNavController()) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        AndroidView(factory = { context ->
-            val previewView = PreviewView(context)
-            startCamera(previewView, viewModel, navController)
-            previewView
-        })
+fun QrCodeScannerScreen(modifier:Modifier=Modifier,viewModel: DeliveryViewModel, navController: NavController=rememberNavController()) {
+    val cameraPermissionState=rememberPermissionState(android.Manifest.permission.CAMERA)
+
+    LaunchedEffect(Unit) {
+        if (!cameraPermissionState.status.isGranted) {
+            cameraPermissionState.launchPermissionRequest()
+        }
+    }
+
+
+    when(cameraPermissionState.status) {
+        PermissionStatus.Granted -> {
+            Column(modifier = modifier.fillMaxSize()) {
+                AndroidView(factory = { context ->
+                    val previewView = PreviewView(context)
+                    startCamera(previewView, viewModel, navController)
+                    previewView
+                },modifier=Modifier.fillMaxSize())
+            }
+        }
+        is PermissionStatus.Denied -> {
+            Text("Camera permission denied. Cannot scan QR code.")
+        }
     }
 }
 

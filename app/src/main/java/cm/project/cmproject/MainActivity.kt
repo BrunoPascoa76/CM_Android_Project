@@ -1,7 +1,7 @@
 package cm.project.cmproject
 
 import OrderViewModel
-import QRCodeScreen
+import cm.project.cmproject.ui.QrCodeScannerScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -89,7 +89,7 @@ fun AppNavHost(
             }
         }
         composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getInt("deliveryId") ?: 0
+            val deliveryId = backStackEntry.arguments?.getString("deliveryId")?.toIntOrNull()?:0
             DeliveryDetailsScreen(
                 deliveryId = deliveryId,
                 navController = navController,
@@ -102,8 +102,8 @@ fun AppNavHost(
                 OrderScreen(viewModel=orderViewModel,navController=navController)
             }
         }
-        composable("qrCode"){
-            QRCodeScreen(navController=navController, viewModel = deliveryViewModel)
+        composable("qrCodeScanner"){
+            QrCodeScannerScreen(navController=navController, viewModel = deliveryViewModel)
         }
     }
 }
