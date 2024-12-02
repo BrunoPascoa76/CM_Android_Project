@@ -1,21 +1,25 @@
 [versions]
-agp = "8.6.1"
+agp = "8.7.3"
 firebaseBom = "33.6.0"
-kotlin = "1.9.0"
+kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
-composeBom = "2024.04.01"
+composeBom = "2024.11.00"
 lifecycleViewmodelCompose = "2.8.7"
 navigationCompose = "2.8.4"
 vectordrawable = "1.2.0"
 googleMaps = "19.0.0" # Google Maps SDK
-googleMapsCompose = "2.13.0" # Maps Compose
+googleMapsCompose = "4.3.3" # Maps Compose
 androidMapsUtils = "2.2.3" # Maps Utils
 accompanistPermissions = "0.30.1" # Permissions Accompanist Library
+#mapsCompose = "4.3.3"
+places = "4.1.0"
+#playServicesMaps = "19.0.0"
+timber = "5.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +47,10 @@ google-maps = { module = "com.google.android.gms:play-services-maps", version.re
 google-maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "googleMapsCompose" }
 android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
 google-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
+places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
+#play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
