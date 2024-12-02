@@ -4,21 +4,23 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -55,7 +57,18 @@ fun DeliveryDetailsScreen(modifier: Modifier =Modifier, deliveryId: Int = 123, n
 
     Scaffold(
         modifier=modifier,
-        topBar= { CenterAlignedTopAppBar(title={Text("Delivery Details")}) }
+        topBar= { CenterAlignedTopAppBar(title={
+            Row(verticalAlignment = Alignment.CenterVertically){
+                IconButton(
+                    onClick = { navController.navigateUp() }
+                ) {
+                    Icon(imageVector= Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
+                Box(modifier=Modifier.fillMaxWidth()) {
+                    Text("Delivery Details")
+                }
+            }
+        }) }
     ) { innerPadding->
         if (delivery==null){
             Column(
@@ -96,7 +109,9 @@ fun OrderDetails(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ){
         ElevatedCard{
-            Column(modifier = Modifier.fillMaxWidth().padding(10.dp),
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -115,7 +130,7 @@ fun OrderDetails(
             QrCode(deliveryId = delivery!!.deliveryId)
         }else{
             ElevatedButton(
-                onClick = {}
+                onClick = {navController.navigate("order")}
             ){
                 Row{
                     Icon(imageVector= ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px), contentDescription = "Scan QR Code")
@@ -133,7 +148,9 @@ private fun QrCode(deliveryId: Int) {
         Image(
             bitmap = bitmap.asImageBitmap(),
             contentDescription = "QR Code",
-            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
         )
     }
 }

@@ -3,7 +3,6 @@ package cm.project.cmproject.ui
 import OrderViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -47,21 +46,20 @@ fun OrderScreen(viewModel: OrderViewModel = viewModel(),navController: NavContro
     ) {
         // Title
         Row(
-            modifier=Modifier.fillMaxWidth(),
+            modifier=Modifier.fillMaxWidth().padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
                 text = "Track the Order",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 16.dp)
+                style = MaterialTheme.typography.titleLarge
             )
             //TODO: hide this if not a driver or if there's no delivery
             ElevatedButton(onClick={
                 //TODO: have it fetch the driver's current delivery
                 navController.navigate("deliveryDetails/${123}")
             }){
-                Row{
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically){
                     Icon(imageVector= ImageVector.vectorResource(id = R.drawable.visibility_24px), contentDescription = "See more")
                     Text("See more")
                 }
