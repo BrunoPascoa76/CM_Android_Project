@@ -1,10 +1,12 @@
 package cm.project.cmproject.ui
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -83,10 +85,10 @@ fun OrderDetails(
     userViewModel: UserViewModel,
     navController: NavController
 ){
-    val delivery by deliveryViewModel.state.collectAsStateWithLifecycle()
-    val recipient by deliveryViewModel.recipient.collectAsStateWithLifecycle()
-    val sender by deliveryViewModel.sender.collectAsStateWithLifecycle()
-    val user by userViewModel.state.collectAsStateWithLifecycle()
+    val delivery by deliveryViewModel.state.collectAsState()
+    val recipient by deliveryViewModel.recipient.collectAsState()
+    val sender by deliveryViewModel.sender.collectAsState()
+    val user by userViewModel.state.collectAsState()
 
     Column(
         modifier=modifier.padding(10.dp),
@@ -109,7 +111,7 @@ fun OrderDetails(
             }
         }
         //TODO: add steps
-        if(user!=null && user!!.role!="customer"){
+        if(user!=null && user!!.role=="customer"){
             QrCode(deliveryId = delivery!!.deliveryId)
         }else{
             ElevatedButton(
@@ -128,10 +130,10 @@ fun OrderDetails(
 private fun QrCode(deliveryId: Int) {
     val bitmap = generateQrCode(deliveryId)
     if (bitmap != null) {
-        androidx.compose.foundation.Image(
+        Image(
             bitmap = bitmap.asImageBitmap(),
             contentDescription = "QR Code",
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
         )
     }
 }
@@ -164,20 +166,20 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
 }
 
 //Everyone just draws it pixel by pixel
-private fun generateQrCode(deliveryId: Int): Bitmap? {
-    return try {
-        val bitMatrix = MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, 200, 200)
-        val width = bitMatrix.width
-        val height = bitMatrix.height
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+    private fun generateQrCode(deliveryId: Int,size:Int=200): Bitmap? {
+        return try {
+            val bitMatrix = MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, size,size)
+            val width = bitMatrix.width
+            val height = bitMatrix.height
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.TRANSPARENT)
+                }
             }
+            bitmap
+        } catch (e: WriterException) {
+            null
         }
-        bitmap
-    } catch (e: WriterException) {
-        null
     }
-}
