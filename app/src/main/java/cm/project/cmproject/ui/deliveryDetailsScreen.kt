@@ -1,5 +1,6 @@
 package cm.project.cmproject.ui
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -24,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +40,9 @@ import cm.project.cmproject.viewModels.DeliveryViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.R
 import cm.project.cmproject.viewModels.UserViewModel
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +126,14 @@ fun OrderDetails(
 
 @Composable
 private fun QrCode(deliveryId: Int) {
-    //TODO: generate qr code
+    val bitmap = generateQrCode(deliveryId)
+    if (bitmap != null) {
+        androidx.compose.foundation.Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = "QR Code",
+            modifier = Modifier.size(200.dp)
+        )
+    }
 }
 
 @Composable
@@ -147,5 +160,24 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+//Everyone just draws it pixel by pixel
+private fun generateQrCode(deliveryId: Int): Bitmap? {
+    return try {
+        val bitMatrix = MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, 200, 200)
+        val width = bitMatrix.width
+        val height = bitMatrix.height
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+            }
+        }
+        bitmap
+    } catch (e: WriterException) {
+        null
     }
 }

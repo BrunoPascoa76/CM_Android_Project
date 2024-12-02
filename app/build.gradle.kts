@@ -79,4 +79,5 @@ dependencies {
     implementation(libs.google.maps.compose)
     implementation(libs.android.maps.utils)
     implementation(libs.google.accompanist.permissions)
+    implementation(libs.core)
 }

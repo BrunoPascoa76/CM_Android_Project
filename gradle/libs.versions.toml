@@ -1,5 +1,6 @@
 [versions]
 agp = "8.6.0"
+core = "3.5.0"
 firebaseBom = "33.6.0"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
@@ -21,6 +22,7 @@ accompanistPermissions = "0.30.1" # Permissions Accompanist Library
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-vectordrawable = { module = "androidx.vectordrawable:vectordrawable", version.ref = "vectordrawable" }
+core = { module = "com.google.zxing:core", version.ref = "core" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
