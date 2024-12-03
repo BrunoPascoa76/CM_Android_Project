@@ -1,7 +1,5 @@
 package cm.project.cmproject
 
-import OrderViewModel
-import cm.project.cmproject.ui.QrCodeScannerScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,19 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.ui.AuthTabs
-import cm.project.cmproject.ui.DeliveryDetailsScreen
-import cm.project.cmproject.ui.HomeScreen
-import cm.project.cmproject.ui.Navbar
-import cm.project.cmproject.ui.OrderScreen
-import cm.project.cmproject.ui.ProfileScreen
+import cm.project.cmproject.ui.navigation.AppNavHost
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
@@ -50,60 +38,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavHost(
                         modifier = Modifier.padding(innerPadding),
-                        startDestination = if (user == null) "auth" else "home"
+                        startDestination = if (user == null) "auth" else "home",
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun AppNavHost(
-    modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = "auth"
-) {
-    val orderViewModel: OrderViewModel = viewModel() //TODO: change screens that use this to use DeliveryViewModel (will keep this for now until we no longer need mocks)
-    val userViewModel: UserViewModel = viewModel()
-    val deliveryViewModel: DeliveryViewModel = viewModel()
-    //declare any viewModels here
-
-
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        modifier = modifier
-    ) {
-        composable("auth") {
-            AuthTabs(navController = navController, viewModel = userViewModel)
-        }
-        composable("home") {
-            Navbar(navController) {
-                HomeScreen(viewModel=userViewModel)
-            }
-        }
-        composable("profile") {
-            Navbar(navController) {
-                ProfileScreen(viewModel=userViewModel, navController = navController)
-            }
-        }
-        composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getString("deliveryId")?.toIntOrNull()?:0
-            DeliveryDetailsScreen(
-                deliveryId = deliveryId,
-                navController = navController,
-                deliveryViewModel = deliveryViewModel,
-                userViewModel = userViewModel
-            )
-        }
-        composable("order") {
-            Navbar(navController) {
-                OrderScreen(viewModel=orderViewModel,navController=navController)
-            }
-        }
-        composable("qrCodeScanner"){
-            QrCodeScannerScreen(navController=navController, viewModel = deliveryViewModel)
         }
     }
 }

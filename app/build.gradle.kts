@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    //alias(libs.plugins.compose.compiler) apply false
 }
 
 android {
@@ -86,4 +88,10 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.barcode.scanning)
     implementation(libs.accompanist.permissions.vlatestversion)
+
+    // Google Maps SDK for Android
+    implementation(libs.places)
+    //implementation(libs.play.services.maps)
+
+    implementation(libs.timber)
 }
