@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -89,20 +91,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     val extraPadding by animateDpAsState (targetValue = if (expanded.value) 48.dp else 0.dp,
         animationSpec = tween(durationMillis = 1000), label = ""
     )
-    Surface(color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-        Row (modifier = Modifier.padding(24.dp)){
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(bottom = extraPadding),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Order n.º $name")
-            }
-            ElevatedButton(onClick = {expanded.value = !expanded.value}) {
-                Text(if (expanded.value) "Show less" else "Show more")
-            }
+    Row (modifier = Modifier.padding(24.dp)){
+        ElevatedButton(onClick = {expanded.value = !expanded.value}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary), contentPadding = PaddingValues(vertical = 10.dp, horizontal = 100.dp)) {
+            Text(text = "Order n.º $name")
         }
     }
 }
