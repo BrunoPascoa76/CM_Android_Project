@@ -43,6 +43,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.ui.theme.PlaceAnOrderScreenTheme
 
@@ -60,13 +62,13 @@ class MainActivity : ComponentActivity() {
 */
 
 @Composable
-fun OrdersListScreen(modifier: Modifier = Modifier) {
+fun OrdersListScreen(modifier: Modifier = Modifier, navController: NavController = rememberNavController()) {
     var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
     if (shouldShowOnboarding) {
         Column {
             OnboardingScreen(
-                onContinueClicked = { shouldShowOnboarding = false }
+                navController = navController
             )
             Greetings()
         }
@@ -88,18 +90,14 @@ fun Greetings(modifier: Modifier = Modifier, names: List<String> = List (1000){"
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     val expanded = remember { mutableStateOf(false) }
-    val extraPadding by animateDpAsState (targetValue = if (expanded.value) 48.dp else 0.dp,
-        animationSpec = tween(durationMillis = 1000), label = ""
-    )
-    Row (modifier = Modifier.padding(24.dp)){
-        ElevatedButton(onClick = {expanded.value = !expanded.value}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary), contentPadding = PaddingValues(vertical = 10.dp, horizontal = 100.dp)) {
-            Text(text = "Order n.º $name")
-        }
+
+    ElevatedButton(modifier = Modifier.padding(12.dp).fillMaxWidth(), onClick = {expanded.value = !expanded.value}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary), contentPadding = PaddingValues(vertical = 15.dp, horizontal = 100.dp)) {
+        Text(text = "Order n.º $name")
     }
 }
 
 @Composable
-fun OnboardingScreen(modifier: Modifier = Modifier, onContinueClicked: () -> Unit/*, onSearch: (String) -> Unit*/) {
+fun OnboardingScreen(modifier: Modifier = Modifier, navController: NavController = rememberNavController()/*, onSearch: (String) -> Unit*/) {
     var text by rememberSaveable { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -112,7 +110,9 @@ fun OnboardingScreen(modifier: Modifier = Modifier, onContinueClicked: () -> Uni
         Text("Post & Paket Tracking")
         Button(
             modifier = Modifier.padding(vertical = 24.dp),
-            onClick = onContinueClicked
+            onClick = {
+                navController.navigate("profile") //TODO
+            }
         ) {
             Text("Create New Order")
         }
@@ -142,6 +142,7 @@ fun OnboardingScreen(modifier: Modifier = Modifier, onContinueClicked: () -> Uni
     }
 }
 
+/*
 @Preview(showBackground = true, widthDp = 320, heightDp = 320)
 @Composable
 fun OnboardingPreview() {
@@ -149,7 +150,7 @@ fun OnboardingPreview() {
         OnboardingScreen(onContinueClicked = {}/*, onSearch = {}*/)
     }
 }
-
+*/
 
 @Preview(showBackground = true, widthDp = 320)
 @Composable
