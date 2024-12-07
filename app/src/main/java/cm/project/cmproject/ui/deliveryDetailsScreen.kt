@@ -43,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.R
+import cm.project.cmproject.components.DeliveryProgressBar
 import cm.project.cmproject.viewModels.UserViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
@@ -51,41 +52,59 @@ import com.google.zxing.WriterException
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview(showBackground = true)
-fun DeliveryDetailsScreen(modifier: Modifier =Modifier, deliveryId: Int = 123, navController: NavController=rememberNavController(), deliveryViewModel: DeliveryViewModel= viewModel(), userViewModel: UserViewModel= viewModel()) {
+fun DeliveryDetailsScreen(
+    modifier: Modifier = Modifier,
+    deliveryId: Int = 123,
+    navController: NavController = rememberNavController(),
+    deliveryViewModel: DeliveryViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
+) {
     deliveryViewModel.fetchDelivery(deliveryId)
     val delivery by deliveryViewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
-        modifier=modifier,
-        topBar= { CenterAlignedTopAppBar(title={
-            Row(verticalAlignment = Alignment.CenterVertically){
-                IconButton(
-                    onClick = { navController.navigateUp() }
+        modifier = modifier,
+        topBar = {
+            CenterAlignedTopAppBar(title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = { navController.navigateUp() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Text("Delivery Details")
+                    }
+                }
+            })
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = modifier.padding(innerPadding).fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ErrorMessage(deliveryViewModel)
+            if (delivery == null) {
+                Box(
+                    modifier=Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(imageVector= Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    CircularProgressIndicator(
+                        modifier = Modifier.width(64.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 }
-                Box(modifier=Modifier.fillMaxWidth()) {
-                    Text("Delivery Details")
-                }
-            }
-        }) }
-    ) { innerPadding->
-        if (delivery==null){
-            Column(
-                modifier=Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.width(64.dp),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                OrderDetails(
+                    deliveryViewModel = deliveryViewModel,
+                    userViewModel = userViewModel,
+                    navController = navController
                 )
-            }
-        }else {
-            Column(modifier = Modifier.padding(innerPadding)) {
-                ErrorMessage(deliveryViewModel)
-                OrderDetails(deliveryViewModel = deliveryViewModel, userViewModel = userViewModel, navController = navController)
+
             }
         }
     }
@@ -97,45 +116,49 @@ fun OrderDetails(
     deliveryViewModel: DeliveryViewModel,
     userViewModel: UserViewModel,
     navController: NavController
-){
+) {
     val delivery by deliveryViewModel.state.collectAsState()
     val recipient by deliveryViewModel.recipient.collectAsState()
     val sender by deliveryViewModel.sender.collectAsState()
     val user by userViewModel.state.collectAsState()
 
     Column(
-        modifier=modifier.padding(10.dp),
+        modifier = modifier.padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp),
-    ){
-        ElevatedCard{
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
+    ) {
+        ElevatedCard {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                DetailsRow("Title", delivery?.parcel?.description?:"N/A")
-                DetailsRow("Status", delivery?.status?:"Unknown")
-                if(recipient!=null) {
+                DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                DetailsRow("Status", delivery?.status ?: "Unknown")
+                if (recipient != null) {
                     DetailsRow("Recipient Name", recipient!!.fullName)
                     DetailsRow("Recipient Address", recipient!!.address)
                 }
-                if(sender!=null) {
+                if (sender != null) {
                     DetailsRow("Sender Name", sender!!.fullName)
                     DetailsRow("Sender Address", sender!!.address)
                 }
             }
         }
-        //TODO: add steps
-        if(user!=null && user!!.role=="customer"){
+        DeliveryProgressBar(viewModel = deliveryViewModel)
+        if (user != null && user!!.role == "customer") {
             QrCode(deliveryId = delivery!!.deliveryId)
-        }else{
+        } else {
             ElevatedButton(
-                onClick = {navController.navigate("qrCodeScanner")}
-            ){
-                Row{
-                    Icon(imageVector= ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px), contentDescription = "Scan QR Code")
+                onClick = { navController.navigate("qrCodeScanner") }
+            ) {
+                Row {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
+                        contentDescription = "Scan QR Code"
+                    )
                     Text("Enter qr code")
                 }
             }
@@ -158,9 +181,9 @@ private fun QrCode(deliveryId: Int) {
 }
 
 @Composable
-private fun DetailsRow(title:String, value:String) {
-    Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text("${title}:",fontWeight= FontWeight.Bold)
+private fun DetailsRow(title: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text("${title}:", fontWeight = FontWeight.Bold)
         Text(value)
     }
 }
@@ -185,20 +208,25 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
 }
 
 //Everyone just draws it pixel by pixel
-    private fun generateQrCode(deliveryId: Int,size:Int=200): Bitmap? {
-        return try {
-            val bitMatrix = MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, size,size)
-            val width = bitMatrix.width
-            val height = bitMatrix.height
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+private fun generateQrCode(deliveryId: Int, size: Int = 200): Bitmap? {
+    return try {
+        val bitMatrix =
+            MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, size, size)
+        val width = bitMatrix.width
+        val height = bitMatrix.height
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
-            for (x in 0 until width) {
-                for (y in 0 until height) {
-                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.TRANSPARENT)
-                }
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                bitmap.setPixel(
+                    x,
+                    y,
+                    if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.TRANSPARENT
+                )
             }
-            bitmap
-        } catch (e: WriterException) {
-            null
         }
+        bitmap
+    } catch (e: WriterException) {
+        null
     }
+}
