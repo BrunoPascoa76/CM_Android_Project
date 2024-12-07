@@ -18,7 +18,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -40,6 +45,8 @@ import com.google.mlkit.vision.common.InputImage
 fun QrCodeScannerScreen(modifier:Modifier=Modifier,viewModel: DeliveryViewModel, navController: NavController=rememberNavController()) {
     val cameraPermissionState=rememberPermissionState(android.Manifest.permission.CAMERA)
 
+    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+
     LaunchedEffect(Unit) {
         if (!cameraPermissionState.status.isGranted) {
             cameraPermissionState.launchPermissionRequest()
@@ -52,7 +59,7 @@ fun QrCodeScannerScreen(modifier:Modifier=Modifier,viewModel: DeliveryViewModel,
             Box(modifier = modifier.fillMaxSize()) {
                 AndroidView(factory = { context ->
                     val previewView = PreviewView(context)
-                    startCamera(previewView, viewModel, navController)
+                    cameraProvider=startCamera(previewView, viewModel, navController)
                     previewView
                 },modifier=Modifier.fillMaxSize())
                 Row(modifier=Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.Start){
@@ -64,6 +71,11 @@ fun QrCodeScannerScreen(modifier:Modifier=Modifier,viewModel: DeliveryViewModel,
                     }
                 }
             }
+            DisposableEffect(Unit) {
+                onDispose {
+                    cameraProvider?.unbindAll() // Unbind all use cases
+                }
+            }
         }
         is PermissionStatus.Denied -> {
             Text("Camera permission denied. Cannot scan QR code.")
@@ -71,31 +83,30 @@ fun QrCodeScannerScreen(modifier:Modifier=Modifier,viewModel: DeliveryViewModel,
     }
 }
 
-private fun startCamera(previewView: PreviewView, viewModel: DeliveryViewModel, navController: NavController) {
-    val cameraProviderFuture = ProcessCameraProvider.getInstance(previewView.context)
+private fun startCamera(previewView: PreviewView, viewModel: DeliveryViewModel, navController: NavController): ProcessCameraProvider {
+    val cameraProvider: ProcessCameraProvider=ProcessCameraProvider.getInstance(previewView.context).get()
 
-    cameraProviderFuture.addListener({
-        val cameraProvider = cameraProviderFuture.get()
-        val preview = Preview.Builder().build().also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
+    val preview = Preview.Builder().build().also {
+        it.surfaceProvider = previewView.surfaceProvider
+    }
+
+    val imageAnalysis = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .build().also {
+            it.setAnalyzer(ContextCompat.getMainExecutor(previewView.context), BarcodeAnalyzer { result ->
+                viewModel.submitQRCode(result)
+                navController.navigateUp()
+            })
         }
 
-        val imageAnalysis = ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build().also {
-                it.setAnalyzer(ContextCompat.getMainExecutor(previewView.context), BarcodeAnalyzer { result ->
-                    viewModel.submitQRCode(result)
-                    navController.navigateUp()
-                })
-            }
+    cameraProvider.bindToLifecycle( // Use cameraProvider?. to handle null
+        previewView.context as LifecycleOwner,
+        CameraSelector.DEFAULT_BACK_CAMERA,
+        preview,
+        imageAnalysis
+    )
 
-        cameraProvider.bindToLifecycle(
-            previewView.context as LifecycleOwner,
-            CameraSelector.DEFAULT_BACK_CAMERA,
-            preview,
-            imageAnalysis
-        )
-    }, ContextCompat.getMainExecutor(previewView.context))
+    return cameraProvider
 }
 
 
