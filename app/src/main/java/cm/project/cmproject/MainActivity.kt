@@ -35,12 +35,10 @@ class MainActivity : ComponentActivity() {
                     viewModel.fetchUserTable(user.uid)
                 }
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavHost(
-                        modifier = Modifier.padding(innerPadding),
-                        startDestination = if (user == null) "auth" else "home",
-                    )
-                }
+                AppNavHost(
+                    startDestination = if (user == null) "auth" else "home",
+                )
+
             }
         }
     }

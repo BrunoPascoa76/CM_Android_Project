@@ -1,6 +1,7 @@
 package cm.project.cmproject.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -13,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.Icon
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @Composable
@@ -25,7 +27,7 @@ fun Navbar(
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar{
                 NavigationBarItem(
                     icon={Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")},
                     label = { Text("Home") },
@@ -39,13 +41,15 @@ fun Navbar(
                     onClick = { navController.navigate("order") }
                 )
                 NavigationBarItem(
+                    modifier=Modifier.padding(bottom = 0.dp),
                     icon={Icon(imageVector = Icons.Filled.Person, contentDescription = "Profile")},
                     label = { Text("Profile") },
                     selected = currentRoute == "profile",
                     onClick = { navController.navigate("profile") }
                 )
             }
-        }
+        },
+
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()
