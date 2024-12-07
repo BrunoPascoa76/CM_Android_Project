@@ -14,11 +14,18 @@ import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.viewModels.UserViewModel
+import kotlinx.serialization.Serializable
 
 
 /**
  * Provides Navigation graph for the application.
  */
+
+// Routes
+@Serializable
+object Home
+object Profile
+object Order
 
 @Composable
 fun AppNavHost(
@@ -37,17 +44,17 @@ fun AppNavHost(
         composable("auth") {
             AuthTabs(navController = navController, viewModel = viewModel)
         }
-        composable("home") {
+        composable<Home> {
             Navbar(navController) {
                 HomeScreen(viewModel=viewModel)
             }
         }
-        composable("profile") {
+        composable<Profile> {
             Navbar(navController) {
                 ProfileScreen(viewModel=viewModel, navController = navController)
             }
         }
-        composable("order") {
+        composable<Order> {
             Navbar(navController) {
                 OrderScreen(viewModel=orderViewModel)
             }
