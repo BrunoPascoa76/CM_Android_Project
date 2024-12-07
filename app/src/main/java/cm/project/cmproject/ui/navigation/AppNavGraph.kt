@@ -59,5 +59,8 @@ fun AppNavHost(
                 OrderScreen(viewModel=orderViewModel)
             }
         }
+        composable<Order> {
+            OrderScreen(viewModel=orderViewModel)
+        }
     }
 }
