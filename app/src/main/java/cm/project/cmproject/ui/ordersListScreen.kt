@@ -111,7 +111,7 @@ fun OnboardingScreen(modifier: Modifier = Modifier, navController: NavController
         Button(
             modifier = Modifier.padding(vertical = 24.dp),
             onClick = {
-                navController.navigate("profile") //TODO
+                navController.navigate("order")
             }
         ) {
             Text("Create New Order")
