@@ -44,6 +44,31 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
+    fun fetchCurrentDelivery(user:User?){
+        if(user!=null){
+            viewModelScope.launch {
+                when (val result = DeliveryRepository().getAllByUserIdAndStatus(
+                    user.uid,
+                    listOf("Pending","Accepted","In Transit")
+                )) {
+                    is Result.Success -> {
+                        _errorMessage.value = null
+                        if (result.data.isEmpty()) {
+                            _state.value = null
+                        } else {
+                            //TODO: consider what we should do if user is involved in multiple active deliveries (more for customers than drivers)
+                            _state.value = result.data[0]
+                        }
+                    }
+                    is Result.Error -> {
+                        _state.value=null
+                        _errorMessage.value = result.exception.message
+                    }
+                }
+            }
+        }
+    }
+
     fun submitQRCode(result: String) {
         if(_state.value?.deliveryId.toString() == result){
             incrementDeliveryStatus()

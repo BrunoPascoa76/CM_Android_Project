@@ -2,6 +2,8 @@ package cm.project.cmproject.ui.navigation
 
 import OrderViewModel
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -52,8 +54,10 @@ fun AppNavHost(
             }
         }
         composable("order") {
+            val user by userViewModel.state.collectAsState()
             Navbar(navController) {
-                OrderScreen(viewModel=orderViewModel,navController=navController)
+                deliveryViewModel.fetchCurrentDelivery(user)
+                OrderScreen(mockViewModel=orderViewModel,navController=navController)
             }
         }
         composable("deliveryDetails/{deliveryId}"){ backStackEntry ->

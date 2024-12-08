@@ -17,6 +17,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
+import cm.project.cmproject.viewModels.DeliveryViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -27,8 +28,9 @@ import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun OrderScreen(viewModel: OrderViewModel = viewModel(),navController: NavController = rememberNavController()) {
-    val orderState by viewModel.orderState.collectAsState()
+fun OrderScreen(mockViewModel: OrderViewModel = viewModel(), deliveryViewModel: DeliveryViewModel =viewModel(), navController: NavController = rememberNavController()) {
+    val orderState by mockViewModel.orderState.collectAsState()
+    val currentDelivery by deliveryViewModel.state.collectAsState()
 
     // Request location permissions dynamically
     val locationPermissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -55,9 +57,10 @@ fun OrderScreen(viewModel: OrderViewModel = viewModel(),navController: NavContro
                 style = MaterialTheme.typography.titleLarge
             )
             //TODO: hide this if not a driver or if there's no delivery
-            ElevatedButton(onClick={
-                //TODO: have it fetch the driver's current delivery
-                navController.navigate("deliveryDetails/${123}")
+            ElevatedButton(
+                enabled=currentDelivery!=null,
+                onClick={
+                navController.navigate("deliveryDetails/${currentDelivery?.deliveryId}")
             }){
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically){
                     Icon(imageVector= ImageVector.vectorResource(id = R.drawable.visibility_24px), contentDescription = "See more")

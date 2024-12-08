@@ -2,6 +2,7 @@ package cm.project.cmproject.repositories
 
 import cm.project.cmproject.models.Delivery
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
@@ -32,6 +33,39 @@ class DeliveryRepository{
             Firebase.firestore.collection("deliveries").document(delivery.deliveryId.toString()).set(delivery).await()
             Result.Success(true)
         }catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    suspend fun getAllByUserIdAndStatus(userId:String,status:String): Result<List<Delivery>> {
+        return try {
+            val snapshot=Firebase.firestore.collection("deliveries")
+                .where(Filter.or(
+                    Filter.equalTo("driverId",userId),
+                    Filter.equalTo("senderId",userId),
+                    Filter.equalTo("recipientId",userId)
+                ))
+                .whereEqualTo("status",status)
+                //TODO: add optional (or not) sorting
+                .get().await()
+            Result.Success(snapshot.documents.mapNotNull{it.toObject<Delivery>()})
+        }catch(e:Exception){
+            Result.Error(e)
+        }
+    }
+
+    suspend fun getAllByUserIdAndStatus(userId:String,status:List<String>):Result<List<Delivery>>{
+        return try {
+            val snapshot=Firebase.firestore.collection("deliveries")
+                .where(Filter.or(
+                    Filter.equalTo("driverId",userId),
+                    Filter.equalTo("senderId",userId),
+                    Filter.equalTo("recipientId",userId)
+                ))
+                .whereIn("status",status)
+                .get().await()
+            Result.Success(snapshot.documents.mapNotNull{it.toObject<Delivery>()})
+        }catch(e:Exception){
             Result.Error(e)
         }
     }
