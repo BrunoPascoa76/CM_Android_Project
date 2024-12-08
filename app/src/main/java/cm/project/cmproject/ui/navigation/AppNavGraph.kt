@@ -57,7 +57,7 @@ fun AppNavHost(
             val user by userViewModel.state.collectAsState()
             Navbar(navController) {
                 deliveryViewModel.fetchCurrentDelivery(user)
-                OrderScreen(mockViewModel=orderViewModel,navController=navController)
+                OrderScreen(mockViewModel=orderViewModel,deliveryViewModel=deliveryViewModel,navController=navController)
             }
         }
         composable("deliveryDetails/{deliveryId}"){ backStackEntry ->

@@ -1,7 +1,6 @@
 package cm.project.cmproject.ui
 
 import OrderViewModel
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +16,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
+import cm.project.cmproject.components.DeliveryProgressBar
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -75,18 +75,7 @@ fun OrderScreen(mockViewModel: OrderViewModel = viewModel(), deliveryViewModel: 
             Text(text = "Driver: ${orderState.driverName}, ${orderState.driverPhone}")
         }
 
-        // Status Flow
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            StatusItem("Driver Assigned", orderState.currentStatus == OrderStatus.DRIVER_ASSIGNED)
-            StatusItem("Pickup", orderState.currentStatus == OrderStatus.PICKUP)
-            StatusItem("In Transit", orderState.currentStatus == OrderStatus.IN_TRANSIT)
-            StatusItem("Delivered", orderState.currentStatus == OrderStatus.DELIVERED)
-        }
+        DeliveryProgressBar(modifier=Modifier.padding(bottom=10.dp),deliveryViewModel=deliveryViewModel)
 
         // Google Map
         Box(
@@ -147,21 +136,5 @@ fun OrderMap(
             points = listOf(pickupLocation, currentLocation, deliveryLocation),
             color = androidx.compose.ui.graphics.Color.Black
         )
-    }
-}
-
-@Composable
-fun StatusItem(label: String, isActive: Boolean) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .background(
-                    color = if (isActive) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                    shape = androidx.compose.foundation.shape.CircleShape
-                )
-        )
-        Text(text = label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
     }
 }

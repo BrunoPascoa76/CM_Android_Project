@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,20 +29,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun DeliveryProgressBar(viewModel: DeliveryViewModel = viewModel()) {
-    val delivery by viewModel.state.collectAsState()
+fun DeliveryProgressBar(modifier:Modifier=Modifier, deliveryViewModel: DeliveryViewModel = viewModel()) {
+    val delivery by deliveryViewModel.state.collectAsState()
 
-    if (delivery == null) {
-        CircularProgressIndicator(
-            modifier = Modifier.width(64.dp),
-            color = MaterialTheme.colorScheme.secondary,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    } else {
+    if (delivery != null) {
         val completedSteps = delivery!!.completedSteps
         val steps = delivery!!.steps
         val progress = 0.5 //TODO: change to real value (once we get realtime db up and running)
-        Row(modifier=Modifier.fillMaxWidth().horizontalScroll(state=rememberScrollState()), horizontalArrangement = Arrangement.Center) {
+        Row(modifier=modifier.fillMaxWidth().horizontalScroll(state=rememberScrollState()), horizontalArrangement = Arrangement.Center) {
             if (steps.isEmpty()) {
                 Text("No steps available", style = TextStyle(fontSize = 16.sp))
             }else{
@@ -56,7 +48,7 @@ fun DeliveryProgressBar(viewModel: DeliveryViewModel = viewModel()) {
                         isCompleted = i < completedSteps
                     )
                     if (i < steps.size - 1) {
-                        val barProgress= (if (i<completedSteps) 1f else (if(i==completedSteps) progress else 0f)).toFloat()
+                        val barProgress= (if (i<completedSteps-1) 1f else (if(i==completedSteps-1) progress else 0f)).toFloat()
                         ProgressBar(progress= barProgress)
                     }
                 }

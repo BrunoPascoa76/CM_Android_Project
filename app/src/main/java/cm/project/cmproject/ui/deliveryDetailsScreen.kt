@@ -147,7 +147,7 @@ fun OrderDetails(
                 }
             }
         }
-        DeliveryProgressBar(viewModel = deliveryViewModel)
+        DeliveryProgressBar(deliveryViewModel = deliveryViewModel)
         if (user != null && user!!.role == "customer") {
             QrCode(deliveryId = delivery!!.deliveryId)
         } else {
