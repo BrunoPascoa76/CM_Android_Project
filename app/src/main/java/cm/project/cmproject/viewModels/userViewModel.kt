@@ -66,7 +66,7 @@ class UserViewModel : ViewModel() {
                     vehicleType
                 )
                 createUserTable(user)
-            }.addOnFailureListener() { exception ->
+            }.addOnFailureListener { exception ->
                 _errorMessage.value = exception.message
             }
     }
