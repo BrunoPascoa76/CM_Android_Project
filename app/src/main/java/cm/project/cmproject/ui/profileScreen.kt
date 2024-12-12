@@ -45,16 +45,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
+import cm.project.cmproject.components.AddressInput
+import cm.project.cmproject.viewModels.AddressViewModel
 
 @Composable
 @Preview(showBackground = true)
 fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = viewModel(), navController: NavHostController = rememberNavController()) {
     val user by viewModel.state.collectAsStateWithLifecycle()
 
+    val addressViewModel: AddressViewModel = viewModel()
+    addressViewModel.setAddress(user?.address)
+
+
     var email: String by remember { mutableStateOf(user?.email ?: "") }
     var fullName: String by remember { mutableStateOf(user?.fullName ?: "") }
     var phoneNumber: String by remember { mutableStateOf(user?.phoneNumber ?: "") }
-    var address: String by remember { mutableStateOf(user?.address ?: "") }
+    val address by addressViewModel.state.collectAsStateWithLifecycle()
     var license: String by remember { mutableStateOf(user?.license ?: "") }
     var vehicleType: String by remember { mutableStateOf(user?.vehicleType ?: "") }
 
@@ -62,6 +68,8 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
     val validFieldsDriver = remember { mutableStateListOf(true,true) }
 
     var isEditing by remember { mutableStateOf(false) }
+
+    validFieldsUniversal[3]= address!=null
 
     Column(
         modifier = modifier.padding(horizontal = 10.dp).verticalScroll(rememberScrollState()),
@@ -114,7 +122,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     DetailsRow(
                         label = "Address:",
                         icon = Icons.Default.Place,
-                        value = user?.address ?: "N/A"
+                        value = user?.address?.getAddressLine(0) ?: "N/A"
                     )
                     if (user?.role == "driver") {
                         DetailsRow(
@@ -178,13 +186,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    OutlinedTextField(
-                        label = { Text("Address") },
-                        value = address,
-                        onValueChange = {
-                            address = it; validFieldsUniversal[3] = address.isNotEmpty()
-                        }
-                    )
+                    AddressInput(addressViewModel = addressViewModel)
                     InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter your address")
 
                     if (user?.role == "driver") {
