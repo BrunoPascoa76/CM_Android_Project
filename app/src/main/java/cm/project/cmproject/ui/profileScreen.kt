@@ -222,7 +222,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                                         email = email,
                                         fullName = fullName,
                                         phoneNumber = phoneNumber,
-                                        address = address,
+                                        address = address!!,
                                         license = license,
                                         vehicleType = vehicleType
                                     )
@@ -241,7 +241,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                                         email = email,
                                         fullName = fullName,
                                         phoneNumber = phoneNumber,
-                                        address = address
+                                        address = address!!
                                     )
                                 )
                                 isEditing = false

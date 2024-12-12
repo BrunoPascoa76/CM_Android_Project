@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import cm.project.cmproject.components.AddressInput
+import cm.project.cmproject.viewModels.AddressViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
 
@@ -144,12 +146,14 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
 
 @Composable
 fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
+    val addressViewModel: AddressViewModel = viewModel()
+
     var email: String by remember { mutableStateOf("") }
     var password: String by remember { mutableStateOf("") }
     var confirmPassword: String by remember { mutableStateOf("") }
     var fullName: String by remember { mutableStateOf("") }
     var phoneNumber: String by remember { mutableStateOf("") }
-    var address: String by remember { mutableStateOf("") }
+    val address by addressViewModel.state.collectAsState()
     var role: String by remember { mutableStateOf("customer") }
 
     var license: String by remember { mutableStateOf("") }
@@ -160,6 +164,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
     val driverValidFields =
         remember { mutableStateListOf(false, false) }
 
+    universalValidFields[5]= address!=null
 
     Column(modifier = modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         ErrorMessage(viewModel)
@@ -266,13 +271,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = {
-                        address = it; universalValidFields[5] = address.isNotEmpty()
-                    },
-                    label = { Text("Address") }
-                )
+                AddressInput(addressViewModel = addressViewModel)
                 InvalidFieldsMessage(universalValidFields, 5, "Please enter your address")
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -310,7 +309,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
             Button(
                 enabled = universalValidFields.all { it }, //this way, you can only submit if all fields are valid
                 onClick = {
-                    viewModel.register(email, password, fullName, phoneNumber, address, role)
+                    viewModel.register(email, password, fullName, phoneNumber, address!!                                                          , role)
                 }, content = { Text("Register") })
         } else {
             Button(
@@ -321,7 +320,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
                         password,
                         fullName,
                         phoneNumber,
-                        address,
+                        address!!,
                         role,
                         license,
                         vehicleType

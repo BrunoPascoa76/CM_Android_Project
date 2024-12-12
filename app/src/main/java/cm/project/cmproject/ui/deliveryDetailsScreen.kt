@@ -139,11 +139,11 @@ fun OrderDetails(
                 DetailsRow("Status", delivery?.status ?: "Unknown")
                 if (recipient != null) {
                     DetailsRow("Recipient Name", recipient!!.fullName)
-                    DetailsRow("Recipient Address", recipient!!.address)
+                    DetailsRow("Recipient Address", recipient!!.address.getAddressLine(0))
                 }
                 if (sender != null) {
                     DetailsRow("Sender Name", sender!!.fullName)
-                    DetailsRow("Sender Address", sender!!.address)
+                    DetailsRow("Sender Address", sender!!.address.getAddressLine(0))
                 }
             }
         }

@@ -1,5 +1,6 @@
 package cm.project.cmproject.viewModels
 
+import android.location.Address
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.User
@@ -31,7 +32,7 @@ class UserViewModel : ViewModel() {
         password: String,
         fullName: String,
         phoneNumber: String,
-        address: String,
+        address: Address,
         role: String
     ) {
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
@@ -48,7 +49,7 @@ class UserViewModel : ViewModel() {
         password: String,
         fullName: String,
         phoneNumber: String,
-        address: String,
+        address: Address,
         role: String,
         license: String,
         vehicleType: String
