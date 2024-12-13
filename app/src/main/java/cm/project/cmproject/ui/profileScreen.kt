@@ -22,9 +22,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,17 +52,18 @@ import cm.project.cmproject.viewModels.AddressViewModel
 
 @Composable
 @Preview(showBackground = true)
-fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = viewModel(), navController: NavHostController = rememberNavController()) {
-    val user by viewModel.state.collectAsStateWithLifecycle()
+fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = viewModel(), addressViewModel: AddressViewModel=viewModel(), navController: NavHostController = rememberNavController()) {
+    val user by userViewModel.state.collectAsStateWithLifecycle()
+    val address by addressViewModel.state.collectAsState()
 
-    val addressViewModel: AddressViewModel = viewModel()
-    addressViewModel.setAddress(user?.address)
+    if(address==null && user?.address!=null){
+        addressViewModel.setAddress(user?.address)
+    }
 
 
     var email: String by remember { mutableStateOf(user?.email ?: "") }
     var fullName: String by remember { mutableStateOf(user?.fullName ?: "") }
     var phoneNumber: String by remember { mutableStateOf(user?.phoneNumber ?: "") }
-    val address by addressViewModel.state.collectAsStateWithLifecycle()
     var license: String by remember { mutableStateOf(user?.license ?: "") }
     var vehicleType: String by remember { mutableStateOf(user?.vehicleType ?: "") }
 
@@ -122,7 +125,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     DetailsRow(
                         label = "Address:",
                         icon = Icons.Default.Place,
-                        value = user?.address?.getAddressLine(0) ?: "N/A"
+                        value = user?.address?.address ?: "N/A"
                     )
                     if (user?.role == "driver") {
                         DetailsRow(
@@ -186,7 +189,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    AddressInput(addressViewModel = addressViewModel)
+                    AddressInput(addressViewModel = addressViewModel,modifier=Modifier.fillMaxWidth(0.7f))
                     InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter your address")
 
                     if (user?.role == "driver") {
@@ -215,9 +218,10 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
 
                         Spacer(modifier = Modifier.height(10.dp))
                         ElevatedButton(
+                            colors = ButtonDefaults.elevatedButtonColors().copy(containerColor = colorScheme.primary, contentColor = colorScheme.onPrimary),
                             enabled = validFieldsUniversal.all { it } && validFieldsDriver.all { it },
                             onClick = {
-                                viewModel.update(
+                                userViewModel.update(
                                     user!!.copy(
                                         email = email,
                                         fullName = fullName,
@@ -236,7 +240,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                         ElevatedButton(
                             enabled = validFieldsUniversal.all { it },
                             onClick = {
-                                viewModel.update(
+                                userViewModel.update(
                                     user!!.copy(
                                         email = email,
                                         fullName = fullName,
@@ -257,7 +261,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
         ElevatedButton(
             enabled = validFieldsUniversal.all { it } && validFieldsDriver.all { it },
             onClick = {
-                viewModel.logout()
+                userViewModel.logout()
                 navController.navigate("auth")
             }
         ) {

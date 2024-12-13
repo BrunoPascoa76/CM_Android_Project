@@ -1,7 +1,7 @@
 package cm.project.cmproject.repositories
 
 import android.content.Context
-import android.location.Address
+import cm.project.cmproject.models.Address
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
@@ -28,6 +28,7 @@ class LocationRepository{
         return try{
             val placesClient = Places.createClient(context)
             val autocompleteRequest = FetchPlaceRequest.newInstance(placeId,listOf(
+                Place.Field.FORMATTED_ADDRESS,
                 Place.Field.ADDRESS_COMPONENTS,
                 Place.Field.LOCATION,
                 Place.Field.PLUS_CODE
@@ -40,21 +41,7 @@ class LocationRepository{
     }
 
     private fun createAddressFromComponents(place:Place): Address{
-        val address=Address(Locale.getDefault())
-        address.latitude=place.location?.latitude?:0.0
-        address.longitude=place.location?.longitude?:0.0
-
-        place.addressComponents?.asList()?.forEach { component ->
-            when {
-                component.types.contains("street_number") -> address.subThoroughfare = component.name
-                component.types.contains("route") -> address.thoroughfare = component.name
-                component.types.contains("locality") -> address.locality = component.name
-                component.types.contains("administrative_area_level_1") -> address.adminArea = component.name
-                component.types.contains("country") -> address.countryName = component.name
-                component.types.contains("postal_code") -> address.postalCode = component.name
-            }
-        }
-        address.featureName=place.plusCode?.globalCode
+        val address=Address(address=place.formattedAddress?:"",latitude=place.location?.latitude?:0.0,longitude=place.location?.longitude?:0.0)
 
         return address
     }

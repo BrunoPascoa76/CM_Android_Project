@@ -17,6 +17,7 @@ import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
+import cm.project.cmproject.viewModels.AddressViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
@@ -34,6 +35,7 @@ fun AppNavHost(
     val userViewModel: UserViewModel = viewModel()
     val orderViewModel: OrderViewModel = viewModel()
     val deliveryViewModel: DeliveryViewModel = viewModel()
+    val addressViewModel: AddressViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -50,7 +52,7 @@ fun AppNavHost(
         }
         composable("profile") {
             Navbar(navController) {
-                ProfileScreen(viewModel=userViewModel, navController = navController)
+                ProfileScreen(userViewModel=userViewModel, addressViewModel = addressViewModel, navController = navController)
             }
         }
         composable("order") {

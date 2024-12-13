@@ -1,5 +1,7 @@
 package cm.project.cmproject.components
 
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,19 +9,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
 import cm.project.cmproject.viewModels.AddressViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.repositories.LocationRepository
@@ -28,6 +34,7 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import cm.project.cmproject.repositories.Result
+import com.google.android.libraries.places.api.Places
 import kotlinx.coroutines.launch
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 
@@ -35,11 +42,15 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction
 @Composable
 fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewModel = viewModel()) {
     var addressInput by remember { mutableStateOf("") }
-    val suggestions = remember { mutableListOf<AutocompletePrediction>() }
+    val suggestions = remember { mutableStateListOf<AutocompletePrediction>() }
     val context = LocalContext.current
     val locationPermissionState =
         rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
     val coroutineScope = rememberCoroutineScope()
+
+    if(!Places.isInitialized()){
+        getAPIKey(context)?.let { Places.initialize(context, it) }
+    }
 
     LaunchedEffect(Unit) {
         if (!locationPermissionState.status.isGranted) {
@@ -56,9 +67,9 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
                         value = addressInput,
                         modifier = Modifier.fillMaxWidth(),
                         onValueChange = {
-                            suggestions.clear()
                             addressInput = it
                             if (addressInput.length > 3) {
+                                suggestions.clear()
                                 coroutineScope.launch {
                                     when (val result = LocationRepository().getAddressSuggestions(
                                         context,
@@ -84,14 +95,14 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
                 if (suggestions.isNotEmpty()) {
                     Column {
                         for (suggestion in suggestions) {
-                            Card(modifier = Modifier
+                            ElevatedCard(modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
                                     coroutineScope.launch {
                                         when(val result=LocationRepository().getAddress(context,suggestion.placeId)){
                                             is Result.Success->{
                                                 addressViewModel.setAddress(result.data)
-                                                addressInput=result.data.getAddressLine(0)
+                                                addressInput=result.data.address
                                                 suggestions.clear()
                                             }
                                             is Result.Error->{
@@ -99,9 +110,11 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
                                             }
                                         }
                                     }
-                                }
+                                },
+                                shape=RectangleShape
                             ) {
                                 Text(text = suggestion.getPrimaryText(null).toString())
+                                Text(text=suggestion.getSecondaryText(null).toString(), fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -118,4 +131,13 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
             }
         }
     }
+}
+
+private fun getAPIKey(context: Context): String? {
+    val applicationInfo = context.packageManager.getApplicationInfo(
+        context.packageName,
+        PackageManager.GET_META_DATA
+    )
+    val bundle = applicationInfo.metaData
+    return bundle?.getString("com.google.android.geo.API_KEY")
 }

@@ -1,6 +1,6 @@
 package cm.project.cmproject.viewModels
 
-import android.location.Address
+import cm.project.cmproject.models.Address
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.User
