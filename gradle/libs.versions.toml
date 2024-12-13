@@ -1,6 +1,6 @@
 [versions]
 accompanistPermissionsVersion = "<latest_version>)"
-agp = "8.6.1"
+agp = "8.7.3"
 barcodeScanning = "17.3.0"
 cameraCore = "1.4.0"
 cameraView = "1.4.0"
@@ -30,6 +30,8 @@ accompanistPermissions = "0.30.1" # Permissions Accompanist Library
 places = "4.1.0"
 #playServicesMaps = "19.0.0"
 timber = "5.0.1"
+firebaseDatabase = "21.0.0"
+firebaseDatabaseKtx = "21.0.0"
 
 [libraries]
 accompanist-permissions-vlatestversion = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissionsVersion" }
@@ -72,6 +74,8 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 #play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

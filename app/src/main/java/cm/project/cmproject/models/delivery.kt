@@ -8,5 +8,9 @@ data class Delivery(
     val parcel: Parcel=Parcel(),
     val status: String="",
     val steps: List<Step> = listOf(),
-    val completedSteps: Int=0
+    val completedSteps: Int=0,
+    val fromAddress: String="",
+    val toAddress: String="",
+    val toEmail: String="",
+    val toPhoneNumber: String="",
 )

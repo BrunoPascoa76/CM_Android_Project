@@ -1,5 +1,6 @@
 package cm.project.cmproject.viewModels
 
+import android.accounts.NetworkErrorException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Delivery
@@ -10,8 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import cm.project.cmproject.repositories.Result
+import timber.log.Timber
 
 class DeliveryViewModel : ViewModel() {
+    private val _accepted = MutableStateFlow<Boolean>(false)
+    val accepted = _accepted.asStateFlow()
+
     private val _state = MutableStateFlow<Delivery?>(null)
     val state = _state.asStateFlow()
 
@@ -128,6 +133,56 @@ class DeliveryViewModel : ViewModel() {
                 }
             } else {
                 _driver.value = null
+            }
+        }
+    }
+
+    fun createDelivery(userId: String, fromAddress: String, toAddress: String, toEmail: String, toPhoneNumber: String) {
+        viewModelScope.launch {
+            when (val recipientResult = UserRepository().getUserById(_state.value!!.driverId!!)) {
+                is Result.Success -> {
+                    // Recipient exists, create delivery
+                    val newDelivery = Delivery(
+                        senderId = userId, // Replace with actual sender ID
+                        recipientId = recipientResult.data?.uid,
+                        fromAddress = fromAddress,
+                        toAddress = toAddress,
+                        toEmail = toEmail,
+                        toPhoneNumber = toPhoneNumber,
+                        status = "Pending",
+                        completedSteps = 0
+                    )
+                    when (val deliveryResult = DeliveryRepository().insertDelivery(newDelivery)) {
+                        is Result.Success -> {
+                            _accepted.value = deliveryResult.data
+                            _errorMessage.value = null
+                        }
+
+                        is Result.Error -> {
+                            when (deliveryResult.exception) {
+                                is NetworkErrorException -> {
+                                    // Handle network error, e.g., show retry option
+                                    _errorMessage.value =
+                                        "Network error: ${deliveryResult.exception.message}"
+                                }
+
+                                is com.google.firebase.database.DatabaseException -> {
+                                    // Handle database error, e.g., log the error and show a generic message
+                                    Timber.tag("DeliveryViewModel")
+                                        .e(deliveryResult.exception, "Database error")
+                                    _errorMessage.value = "Failed to save delivery."
+                                }
+
+                                else -> {
+                                    _errorMessage.value = deliveryResult.exception.message
+                                }
+                            }
+                        }
+                    }
+                }
+                is Result.Error -> {
+                    _errorMessage.value = "Recipient not found. Please ensure the email is correct."
+                }
             }
         }
     }
