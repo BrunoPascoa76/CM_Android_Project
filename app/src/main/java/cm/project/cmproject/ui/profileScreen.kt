@@ -42,6 +42,7 @@ import cm.project.cmproject.viewModels.UserViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -286,7 +287,11 @@ fun DetailsRow(modifier: Modifier = Modifier, label: String, icon: ImageVector, 
             )
             Text(label)
         }
-        Text(value)
+        Text(
+            text=value,
+            textAlign = TextAlign.End,
+            modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp)
+        )
     }
 }
 
