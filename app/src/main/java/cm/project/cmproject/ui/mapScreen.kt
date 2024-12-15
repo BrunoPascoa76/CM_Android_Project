@@ -4,10 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -29,10 +28,13 @@ import cm.project.cmproject.components.SearchBar
 import cm.project.cmproject.viewModels.MapViewModel
 import com.strongtogether.googlemapsjetpackcompose.utils.ManifestUtils
 import com.google.android.libraries.places.api.Places
+import com.google.android.gms.maps.model.LatLng
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import timber.log.Timber
 
 @Composable
-fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rememberNavController()) {
+fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController) {
     // Obtain the current context
     val context = LocalContext.current
 
@@ -43,6 +45,7 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rem
         Places.initialize(context, apiKey)
     }
 
+    val clickedLocation = remember { mutableStateOf<LatLng?>(null) } // Tracks map click
     // Initialize the camera position state, which controls the camera's position on the map
     val cameraPositionState = rememberCameraPositionState()
 
@@ -52,6 +55,8 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rem
 
     // Observe the selected location from the ViewModel
     val selectedLocation by mapViewModel.selectedLocation
+
+    val markers = mapViewModel.markers
 
     // Handle permission requests for accessing fine location
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -88,7 +93,7 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rem
     }
 */
     // Layout that includes the search bar and the map, arranged in a vertical column
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(18.dp)) // Add a spacer with a height of 18dp to push the search bar down
 
         // Add the search bar component
@@ -98,11 +103,28 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rem
                 mapViewModel.selectLocation(place, context)
             }
         )
+        Button(
+            onClick = {
+                // Navigate back to CreateNewOrder screen
+                navController.navigate("createneworder")
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(
+                    alignment = Alignment.BottomCenter
+                ) // Position at the bottom center
+        ) {
+            Text("Return to Order")
+        }
 
         // Display the Google Map
         GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+            modifier = Modifier.fillMaxSize().padding(bottom = 80.dp), // Adjust padding to avoid overlap
+            cameraPositionState = cameraPositionState,
+            onMapClick = { latLng ->
+                clickedLocation.value = latLng // Update clicked location
+                Timber.d("Map clicked at: $latLng")
+            }
         ) {
             // If the user's location is available, place a marker on the map
             userLocation?.let {
@@ -125,6 +147,15 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rem
                 // Move the camera to the selected location with a zoom level of 15f
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 15f)
             }
+
+            clickedLocation.value?.let {
+                Marker(
+                    state = MarkerState(position = it),
+                    title = "Clicked Location",
+                    snippet = "Lat: ${it.latitude}, Lng: ${it.longitude}"
+                )
+            }
         }
     }
+
 }
