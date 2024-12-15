@@ -16,6 +16,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import android.location.Address
+import androidx.compose.runtime.getValue
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.PlacesClient
+
 
 class MapViewModel: ViewModel() {
 
@@ -26,6 +31,10 @@ class MapViewModel: ViewModel() {
     // State to hold the selected place location as LatLng
     private val _selectedLocation = mutableStateOf<LatLng?>(null)
     val selectedLocation: State<LatLng?> = _selectedLocation
+
+    // State to hold the address of the selected location
+    private val _selectedAddress = mutableStateOf("")
+    val selectedAddress: State<String> = _selectedAddress
 
 
     // Function to fetch the user's location and update the state
@@ -108,5 +117,4 @@ class MapViewModel: ViewModel() {
             }
         }
     }
-
 }
