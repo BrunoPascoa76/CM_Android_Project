@@ -93,6 +93,10 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.barcode.scanning)
     implementation(libs.accompanist.permissions.vlatestversion)
+    implementation(libs.material3)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.places.v350)
+
 
     // Google Maps SDK for Android
     implementation(libs.places)

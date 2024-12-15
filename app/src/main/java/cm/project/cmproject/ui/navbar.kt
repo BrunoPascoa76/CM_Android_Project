@@ -28,16 +28,16 @@ fun Navbar(
         bottomBar = {
             NavigationBar{
                 NavigationBarItem(
-                    icon={Icon(imageVector = Icons.Filled.Home, contentDescription = "Home")},
-                    label = { Text("Home") },
-                    selected = currentRoute == "home",
-                    onClick = { navController.navigate("home") }
+                    icon={Icon(imageVector = Icons.Filled.Home, contentDescription = "NewOrder")},
+                    label = { Text("NewOrder") },
+                    selected = currentRoute == "createNewOrder",
+                    onClick = { navController.navigate("createNewOrder") }
                 )
                 NavigationBarItem(
-                    icon={Icon(imageVector = Icons.Filled.LocationOn, contentDescription = "order")},
-                    label = { Text("Order") },
-                    selected = currentRoute == "order",
-                    onClick = { navController.navigate("order") }
+                    icon={Icon(imageVector = Icons.Filled.LocationOn, contentDescription = "Map")},
+                    label = { Text("Map") },
+                    selected = currentRoute == "mapScreen",
+                    onClick = { navController.navigate("mapScreen") }
                 )
                 NavigationBarItem(
                     modifier=Modifier.padding(bottom = 0.dp),

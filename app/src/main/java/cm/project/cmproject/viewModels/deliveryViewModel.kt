@@ -137,51 +137,40 @@ class DeliveryViewModel : ViewModel() {
         }
     }
 
-    fun createDelivery(userId: String, fromAddress: String, toAddress: String, toEmail: String, toPhoneNumber: String) {
+    fun createDelivery(userId: String, fromAddress: String, toAddress: String) {
         viewModelScope.launch {
-            when (val recipientResult = UserRepository().getUserById(_state.value!!.driverId!!)) {
+            val newDelivery = Delivery(
+                senderId = userId,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                status = "Pending",
+                completedSteps = 0
+            )
+            when (val deliveryResult = DeliveryRepository().insertDelivery(newDelivery)) {
                 is Result.Success -> {
-                    // Recipient exists, create delivery
-                    val newDelivery = Delivery(
-                        senderId = userId, // Replace with actual sender ID
-                        recipientId = recipientResult.data?.uid,
-                        fromAddress = fromAddress,
-                        toAddress = toAddress,
-                        toEmail = toEmail,
-                        toPhoneNumber = toPhoneNumber,
-                        status = "Pending",
-                        completedSteps = 0
-                    )
-                    when (val deliveryResult = DeliveryRepository().insertDelivery(newDelivery)) {
-                        is Result.Success -> {
-                            _accepted.value = deliveryResult.data
-                            _errorMessage.value = null
+                    _accepted.value = deliveryResult.data
+                    _errorMessage.value = null
+                }
+
+                is Result.Error -> {
+                    when (deliveryResult.exception) {
+                        is NetworkErrorException -> {
+                            // Handle network error, e.g., show retry option
+                            _errorMessage.value =
+                                "Network error: ${deliveryResult.exception.message}"
                         }
 
-                        is Result.Error -> {
-                            when (deliveryResult.exception) {
-                                is NetworkErrorException -> {
-                                    // Handle network error, e.g., show retry option
-                                    _errorMessage.value =
-                                        "Network error: ${deliveryResult.exception.message}"
-                                }
+                        is com.google.firebase.database.DatabaseException -> {
+                            // Handle database error, e.g., log the error and show a generic message
+                            Timber.tag("DeliveryViewModel")
+                                .e(deliveryResult.exception, "Database error")
+                            _errorMessage.value = "Failed to save delivery."
+                        }
 
-                                is com.google.firebase.database.DatabaseException -> {
-                                    // Handle database error, e.g., log the error and show a generic message
-                                    Timber.tag("DeliveryViewModel")
-                                        .e(deliveryResult.exception, "Database error")
-                                    _errorMessage.value = "Failed to save delivery."
-                                }
-
-                                else -> {
-                                    _errorMessage.value = deliveryResult.exception.message
-                                }
-                            }
+                        else -> {
+                            _errorMessage.value = deliveryResult.exception.message
                         }
                     }
-                }
-                is Result.Error -> {
-                    _errorMessage.value = "Recipient not found. Please ensure the email is correct."
                 }
             }
         }

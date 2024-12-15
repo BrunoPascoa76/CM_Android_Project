@@ -13,11 +13,14 @@ import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
+import cm.project.cmproject.ui.MapScreen
 import cm.project.cmproject.ui.Navbar
+import cm.project.cmproject.ui.NewOrderScreen
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
 import cm.project.cmproject.viewModels.DeliveryViewModel
+import cm.project.cmproject.viewModels.MapViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
 
@@ -34,6 +37,7 @@ fun AppNavHost(
     val userViewModel: UserViewModel = viewModel()
     val orderViewModel: OrderViewModel = viewModel()
     val deliveryViewModel: DeliveryViewModel = viewModel()
+    val mapViewModel: MapViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -71,6 +75,20 @@ fun AppNavHost(
         }
         composable("qrCodeScanner"){
             QrCodeScannerScreen(navController=navController, viewModel = deliveryViewModel)
+        }
+        composable("mapScreen"){
+            MapScreen(
+                navController = navController,
+                mapViewModel = mapViewModel
+            )
+        }
+        composable("createNewOrder"){
+            Navbar(navController) {
+                NewOrderScreen(
+                    navController = navController,
+                    deliveryViewModel = deliveryViewModel
+                )
+            }
         }
     }
 }

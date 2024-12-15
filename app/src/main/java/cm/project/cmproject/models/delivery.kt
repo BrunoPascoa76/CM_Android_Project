@@ -10,7 +10,5 @@ data class Delivery(
     val steps: List<Step> = listOf(),
     val completedSteps: Int=0,
     val fromAddress: String="",
-    val toAddress: String="",
-    val toEmail: String="",
-    val toPhoneNumber: String="",
+    val toAddress: String=""
 )

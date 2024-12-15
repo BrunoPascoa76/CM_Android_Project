@@ -1,5 +1,6 @@
 package cm.project.cmproject.ui
 
+import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,6 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
@@ -23,14 +27,25 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import cm.project.cmproject.components.SearchBar
 import cm.project.cmproject.viewModels.MapViewModel
+import com.strongtogether.googlemapsjetpackcompose.utils.ManifestUtils
+import com.google.android.libraries.places.api.Places
 import timber.log.Timber
 
 @Composable
-fun MapScreen(mapViewModel: MapViewModel) {
-    // Initialize the camera position state, which controls the camera's position on the map
-    val cameraPositionState = rememberCameraPositionState()
+fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController = rememberNavController()) {
     // Obtain the current context
     val context = LocalContext.current
+
+    // Retrieve the API key from the manifest file
+    val apiKey = ManifestUtils.getApiKeyFromManifest(context)
+    // Initialize the Places API with the retrieved API key
+    if (!Places.isInitialized() && apiKey != null) {
+        Places.initialize(context, apiKey)
+    }
+
+    // Initialize the camera position state, which controls the camera's position on the map
+    val cameraPositionState = rememberCameraPositionState()
+
     // Observe the user's location from the ViewModel
     val userLocation by mapViewModel.userLocation
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
@@ -55,17 +70,23 @@ fun MapScreen(mapViewModel: MapViewModel) {
     LaunchedEffect(Unit) {
         when (PackageManager.PERMISSION_GRANTED) {
             // Check if the location permission is already granted
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 // Fetch the user's location and update the camera
                 mapViewModel.fetchUserLocation(context, fusedLocationClient)
             }
             else -> {
                 // Request the location permission if it has not been granted
-                permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
-
+/*
+    LaunchedEffect(cameraPositionState.isMoving) {
+        if (!cameraPositionState.isMoving) {
+            mapViewModel.getAddress(cameraPositionState.position.target)
+        }
+    }
+*/
     // Layout that includes the search bar and the map, arranged in a vertical column
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(18.dp)) // Add a spacer with a height of 18dp to push the search bar down

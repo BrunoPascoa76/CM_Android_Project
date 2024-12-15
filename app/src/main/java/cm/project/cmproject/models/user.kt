@@ -7,7 +7,6 @@ data class User(
     val phoneNumber: String="",
     val address: String="",
     val role: String="customer",
-
     val license: String="",
     val vehicleType: String=""
 )
