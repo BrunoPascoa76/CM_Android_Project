@@ -20,6 +20,8 @@ import androidx.compose.runtime.getValue
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 
 class MapViewModel: ViewModel() {
@@ -47,6 +49,9 @@ class MapViewModel: ViewModel() {
     fun addMarker(markerData: MarkerData) {
         _markers.value = _markers.value + markerData
     }
+
+    private val _selectedLocationAddress = MutableStateFlow("")
+    val selectedLocationAddress: StateFlow<String> = _selectedLocationAddress
 
     // Function to fetch the user's location and update the state
     fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {

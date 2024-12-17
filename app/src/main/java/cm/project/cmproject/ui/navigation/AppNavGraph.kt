@@ -22,6 +22,7 @@ import cm.project.cmproject.ui.QrCodeScannerScreen
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.MapViewModel
 import cm.project.cmproject.viewModels.UserViewModel
+import androidx.navigation.navArgument
 
 
 /**
@@ -81,6 +82,13 @@ fun AppNavHost(
                 navController = navController,
                 mapViewModel = mapViewModel
             )
+        }
+        composable(
+            route = "mapScreen?addressType={addressType}",
+            arguments = listOf(navArgument("addressType") { defaultValue = "fromAddress" })
+        ) { backStackEntry ->
+            val addressType = backStackEntry.arguments?.getString("addressType") ?: "fromAddress"
+            MapScreen(mapViewModel, deliveryViewModel, navController, addressType)
         }
         composable("createNewOrder"){
             Navbar(navController) {

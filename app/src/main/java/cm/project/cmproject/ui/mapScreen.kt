@@ -26,15 +26,17 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import cm.project.cmproject.components.SearchBar
 import cm.project.cmproject.viewModels.MapViewModel
-import com.strongtogether.googlemapsjetpackcompose.utils.ManifestUtils
+import cm.project.cmproject.viewModels.DeliveryViewModel
+import cm.project.cmproject.utils.ManifestUtils
 import com.google.android.libraries.places.api.Places
 import com.google.android.gms.maps.model.LatLng
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import timber.log.Timber
 
+
 @Composable
-fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController) {
+fun MapScreen(mapViewModel: MapViewModel, deliveryViewModel: DeliveryViewModel, navController: NavHostController, addressType: String) {
     // Obtain the current context
     val context = LocalContext.current
 
@@ -70,6 +72,13 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController) {
             Timber.e("Location permission was denied by the user.")
         }
     }
+    val updateAddress: (String) -> Unit = {
+        if (addressType == "fromAddress") {
+            deliveryViewModel.updateFromAddress(it)
+        } else if (addressType == "toAddress") {
+            deliveryViewModel.updateToAddress(it)
+        }
+    }
 
     // Request the location permission when the composable is launched
     LaunchedEffect(Unit) {
@@ -97,25 +106,27 @@ fun MapScreen(mapViewModel: MapViewModel, navController: NavHostController) {
         Spacer(modifier = Modifier.height(18.dp)) // Add a spacer with a height of 18dp to push the search bar down
 
         // Add the search bar component
-        SearchBar(
-            onPlaceSelected = { place ->
-                // When a place is selected from the search bar, update the selected location
-                mapViewModel.selectLocation(place, context)
+            SearchBar(
+                onPlaceSelected = { place ->
+                    // When a place is selected from the search bar, update the selected location
+                    mapViewModel.selectLocation(place, context)
+                    updateAddress(place.address)
+                }
+            )
+            Button(
+                onClick = {
+                    val selectedAddress = mapViewModel.selectedLocationAddress
+                    updateAddress(selectedAddress)
+                    navController.navigate("createneworder")
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(
+                        alignment = Alignment.BottomCenter
+                    ) // Position at the bottom center
+            ) {
+                Text("Return to Order")
             }
-        )
-        Button(
-            onClick = {
-                // Navigate back to CreateNewOrder screen
-                navController.navigate("createneworder")
-            },
-            modifier = Modifier
-                .padding(16.dp)
-                .align(
-                    alignment = Alignment.BottomCenter
-                ) // Position at the bottom center
-        ) {
-            Text("Return to Order")
-        }
 
         // Display the Google Map
         GoogleMap(

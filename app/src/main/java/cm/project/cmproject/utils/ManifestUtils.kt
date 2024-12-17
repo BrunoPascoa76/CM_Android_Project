@@ -1,4 +1,4 @@
-package com.strongtogether.googlemapsjetpackcompose.utils
+package cm.project.cmproject.utils
 
 import android.content.Context
 import android.content.pm.PackageManager

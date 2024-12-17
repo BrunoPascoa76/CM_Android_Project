@@ -175,4 +175,12 @@ class DeliveryViewModel : ViewModel() {
             }
         }
     }
+
+    fun updateFromAddress(newAddress: String) {
+        _state.value = _state.value?.copy(fromAddress = newAddress) ?: Delivery(fromAddress = newAddress)
+    }
+
+    fun updateToAddress(newAddress: String) {
+        _state.value = _state.value?.copy(toAddress = newAddress) ?: Delivery(toAddress = newAddress)
+    }
 }

@@ -128,7 +128,7 @@ fun NewOrderScreen(
                             )
                             Spacer(modifier = Modifier.width(15.dp))
                             TextButton( // Use TextButton for smaller size
-                                onClick = { navController.navigate("mapScreen") },
+                                onClick = { navController.navigate("mapScreen?addressType=fromAddress") },
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier
                                     .shadow(
@@ -166,7 +166,7 @@ fun NewOrderScreen(
                             )
                             Spacer(modifier = Modifier.width(15.dp))
                             TextButton( // Use TextButton for smaller size
-                                onClick = { navController.navigate("mapScreen") },
+                                onClick = { navController.navigate("mapScreen?addressType=toAddress") },
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier
                                     .shadow(
