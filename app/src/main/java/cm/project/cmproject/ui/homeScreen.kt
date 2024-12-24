@@ -1,19 +1,15 @@
 package cm.project.cmproject.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -44,7 +40,12 @@ import cm.project.cmproject.viewModels.UserViewModel
 
 @Composable
 @Preview(showBackground = true)
-fun HomeScreen(modifier: Modifier = Modifier, navController: NavController = rememberNavController(), userViewModel: UserViewModel= viewModel(), deliveryHistoryViewModel: DeliveryHistoryViewModel=viewModel()){
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController = rememberNavController(),
+    userViewModel: UserViewModel = viewModel(),
+    deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
+) {
     val user by userViewModel.state.collectAsState()
 
     user?.uid?.let {
@@ -52,20 +53,29 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController = rem
         deliveryHistoryViewModel.loadPastDeliveries(it)
     }
 
-    Column(modifier = modifier,horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.size(100.dp))
-        Text(text = "Hello, ${user?.fullName}",fontSize=30.sp)
-        CurrentDeliveriesSection(viewModel = deliveryHistoryViewModel)
-        PastDeliveriesSection(viewModel = deliveryHistoryViewModel)
+        Text(text = "Hello, ${user?.fullName}", fontSize = 30.sp)
+        CurrentDeliveriesSection(
+            viewModel = deliveryHistoryViewModel,
+            navController = navController
+        )
+        PastDeliveriesSection(viewModel = deliveryHistoryViewModel, navController = navController)
     }
 }
 
 @Composable
-fun CurrentDeliveriesSection(modifier: Modifier = Modifier, navController: NavController = rememberNavController(), viewModel: DeliveryHistoryViewModel = viewModel()){
+fun CurrentDeliveriesSection(
+    modifier: Modifier = Modifier,
+    navController: NavController = rememberNavController(),
+    viewModel: DeliveryHistoryViewModel = viewModel()
+) {
     val currentDeliveries by viewModel.currentDeliveries.collectAsState()
 
-    ElevatedCard(modifier = modifier.fillMaxWidth().padding(10.dp)) {
-        Column(modifier=Modifier.padding(10.dp)) {
+    ElevatedCard(modifier = modifier
+        .fillMaxWidth()
+        .padding(10.dp)) {
+        Column(modifier = Modifier.padding(10.dp)) {
             Text(text = "Current Deliveries:", fontSize = 20.sp)
             LazyRow(verticalAlignment = Alignment.CenterVertically) {
                 item {
@@ -76,11 +86,11 @@ fun CurrentDeliveriesSection(modifier: Modifier = Modifier, navController: NavCo
                         Text(text = "Create Order")
                     }
                 }
-                if(currentDeliveries.isEmpty()){
+                if (currentDeliveries.isEmpty()) {
                     item {
                         Text(text = "No current deliveries", modifier = Modifier.padding(10.dp))
                     }
-                }else {
+                } else {
                     items(currentDeliveries.size) {
                         val delivery = currentDeliveries[it]
                         Button(
@@ -118,30 +128,47 @@ fun CurrentDeliveriesSection(modifier: Modifier = Modifier, navController: NavCo
 }
 
 @Composable
-fun PastDeliveriesSection(modifier: Modifier = Modifier,viewModel: DeliveryHistoryViewModel = viewModel()){
+fun PastDeliveriesSection(
+    modifier: Modifier = Modifier,
+    viewModel: DeliveryHistoryViewModel = viewModel(),
+    navController: NavController = rememberNavController()
+) {
     val pastDeliveries by viewModel.pastDeliveries.collectAsState()
 
-    ElevatedCard(modifier=modifier.fillMaxWidth().padding(10.dp)) {
-        Column(modifier=Modifier.padding(10.dp)) {
+    ElevatedCard(modifier = modifier
+        .fillMaxWidth()
+        .padding(10.dp)) {
+        Column(modifier = Modifier.padding(10.dp)) {
             Text(text = "Past Deliveries:", fontSize = 20.sp)
-            if(pastDeliveries.isNotEmpty()) {
+            if (pastDeliveries.isNotEmpty()) {
                 LazyColumn {
                     items(pastDeliveries.size) {
                         val delivery = pastDeliveries[it]
                         ElevatedCard(
-                            modifier = Modifier.fillMaxWidth().padding(10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clickable {
+                                    navController.navigate("deliveryDetails/${delivery.deliveryId}")
+                                },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
                         ) {
-                            Row(horizontalArrangement=Arrangement.SpaceBetween){
-                                Text(delivery.parcel.description, modifier = Modifier.padding(10.dp))
-                                if(delivery.steps.isNotEmpty()) {
-                                    Text(delivery.steps[delivery.steps.size - 1].completionDate.toString(), modifier = Modifier.padding(10.dp))
+                            Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(
+                                    delivery.parcel.description,
+                                    modifier = Modifier.padding(10.dp)
+                                )
+                                if (delivery.steps.isNotEmpty()) {
+                                    Text(
+                                        delivery.steps[delivery.steps.size - 1].completionDate.toString(),
+                                        modifier = Modifier.padding(10.dp)
+                                    )
                                 }
                             }
                         }
                     }
                 }
-            }else{
+            } else {
                 Text(text = "No past deliveries", modifier = Modifier.padding(10.dp))
             }
         }
