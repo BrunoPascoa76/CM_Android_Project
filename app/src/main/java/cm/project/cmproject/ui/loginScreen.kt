@@ -271,7 +271,7 @@ fun RegisterScreen(modifier: Modifier = Modifier, viewModel: UserViewModel) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                AddressInput(addressViewModel = addressViewModel)
+                AddressInput(modifier=Modifier.fillMaxWidth(0.7f), addressViewModel = addressViewModel)
                 InvalidFieldsMessage(universalValidFields, 5, "Please enter your address")
 
                 Spacer(modifier = Modifier.height(10.dp))

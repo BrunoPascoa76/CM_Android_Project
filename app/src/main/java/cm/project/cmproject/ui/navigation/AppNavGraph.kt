@@ -18,6 +18,7 @@ import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
 import cm.project.cmproject.viewModels.AddressViewModel
+import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
@@ -36,6 +37,7 @@ fun AppNavHost(
     val orderViewModel: OrderViewModel = viewModel()
     val deliveryViewModel: DeliveryViewModel = viewModel()
     val addressViewModel: AddressViewModel = viewModel()
+    val deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -47,7 +49,7 @@ fun AppNavHost(
         }
         composable("home") {
             Navbar(navController) {
-                HomeScreen(viewModel=userViewModel)
+                HomeScreen(navController=navController,userViewModel=userViewModel,deliveryHistoryViewModel=deliveryHistoryViewModel)
             }
         }
         composable("profile") {
