@@ -35,29 +35,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import cm.project.cmproject.viewModels.UserViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
 import cm.project.cmproject.components.AddressInput
 import cm.project.cmproject.viewModels.AddressViewModel
+import cm.project.cmproject.viewModels.UserViewModel
 
 @Composable
 @Preview(showBackground = true)
-fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = viewModel(), addressViewModel: AddressViewModel=viewModel(), navController: NavHostController = rememberNavController()) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    userViewModel: UserViewModel = viewModel(),
+    addressViewModel: AddressViewModel = viewModel(),
+    navController: NavHostController = rememberNavController()
+) {
     val user by userViewModel.state.collectAsStateWithLifecycle()
     val address by addressViewModel.state.collectAsState()
 
-    if(address==null && user?.address!=null){
+    if (address == null && user?.address != null) {
         addressViewModel.setAddress(user?.address)
     }
 
@@ -68,15 +73,17 @@ fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = 
     var license: String by remember { mutableStateOf(user?.license ?: "") }
     var vehicleType: String by remember { mutableStateOf(user?.vehicleType ?: "") }
 
-    val validFieldsUniversal = remember { mutableStateListOf(true,true,true,true) }
-    val validFieldsDriver = remember { mutableStateListOf(true,true) }
+    val validFieldsUniversal = remember { mutableStateListOf(true, true, true, true) }
+    val validFieldsDriver = remember { mutableStateListOf(true, true) }
 
     var isEditing by remember { mutableStateOf(false) }
 
-    validFieldsUniversal[3]= address!=null
+    validFieldsUniversal[3] = address != null
 
     Column(
-        modifier = modifier.padding(horizontal = 10.dp).verticalScroll(rememberScrollState()),
+        modifier = modifier
+            .padding(horizontal = 10.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
@@ -88,10 +95,18 @@ fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = 
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (!isEditing) {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
                         Text("Edit")
                     } else {
-                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Cancel")
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Cancel",
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
                         Text("Cancel")
                     }
                 }
@@ -190,7 +205,10 @@ fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = 
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    AddressInput(addressViewModel = addressViewModel,modifier=Modifier.fillMaxWidth(0.7f))
+                    AddressInput(
+                        addressViewModel = addressViewModel,
+                        modifier = Modifier.fillMaxWidth(0.7f)
+                    )
                     InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter your address")
 
                     if (user?.role == "driver") {
@@ -219,7 +237,10 @@ fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = 
 
                         Spacer(modifier = Modifier.height(10.dp))
                         ElevatedButton(
-                            colors = ButtonDefaults.elevatedButtonColors().copy(containerColor = colorScheme.primary, contentColor = colorScheme.onPrimary),
+                            colors = ButtonDefaults.elevatedButtonColors().copy(
+                                containerColor = colorScheme.primary,
+                                contentColor = colorScheme.onPrimary
+                            ),
                             enabled = validFieldsUniversal.all { it } && validFieldsDriver.all { it },
                             onClick = {
                                 userViewModel.update(
@@ -266,6 +287,11 @@ fun ProfileScreen(modifier: Modifier = Modifier, userViewModel: UserViewModel = 
                 navController.navigate("auth")
             }
         ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.logout_24px),
+                modifier = Modifier.padding(end = 7.dp),
+                contentDescription = "Logout"
+            )
             Text("Logout")
         }
     }
@@ -288,9 +314,11 @@ fun DetailsRow(modifier: Modifier = Modifier, label: String, icon: ImageVector, 
             Text(label)
         }
         Text(
-            text=value,
+            text = value,
             textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth(0.8f).padding(start = 5.dp)
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .padding(start = 5.dp)
         )
     }
 }

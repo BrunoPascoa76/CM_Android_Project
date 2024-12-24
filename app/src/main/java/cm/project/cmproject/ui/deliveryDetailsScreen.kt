@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -137,15 +138,24 @@ fun OrderDetails(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                Text("Parcel Details", fontWeight = FontWeight.Bold)
                 DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
                 DetailsRow("Status", delivery?.status ?: "Unknown")
+
+                HorizontalDivider(thickness = 1.dp)
+
                 if (recipient != null) {
-                    DetailsRow("Recipient Name", recipient!!.fullName)
-                    DetailsRow("Recipient Address", recipient!!.address.address)
+                    Text("Recipient Details", fontWeight = FontWeight.Bold)
+                    DetailsRow("Name", recipient!!.fullName)
+                    DetailsRow("Address", recipient!!.address.address)
                 }
+
+                HorizontalDivider(thickness = 1.dp)
+
                 if (sender != null) {
-                    DetailsRow("Sender Name", sender!!.fullName)
-                    DetailsRow("Sender Address", sender!!.address.address)
+                    Text("Sender Details", fontWeight = FontWeight.Bold)
+                    DetailsRow("Name", sender!!.fullName)
+                    DetailsRow("Address", sender!!.address.address)
                 }
             }
         }
@@ -187,8 +197,13 @@ private fun QrCode(deliveryId: Int) {
 @Composable
 private fun DetailsRow(title: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text("${title}:", fontWeight = FontWeight.Bold)
-        Text(value)
+        Text(
+            "${title}:",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .weight(0.4f)
+        )
+        Text(value, textAlign = TextAlign.End, modifier = Modifier.weight(0.6f))
     }
 }
 

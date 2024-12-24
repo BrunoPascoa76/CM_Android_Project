@@ -12,9 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -26,15 +23,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.R
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
@@ -72,9 +66,11 @@ fun CurrentDeliveriesSection(
 ) {
     val currentDeliveries by viewModel.currentDeliveries.collectAsState()
 
-    ElevatedCard(modifier = modifier
-        .fillMaxWidth()
-        .padding(10.dp)) {
+    ElevatedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+    ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(text = "Current Deliveries:", fontSize = 20.sp)
             LazyRow(verticalAlignment = Alignment.CenterVertically) {
@@ -83,7 +79,7 @@ fun CurrentDeliveriesSection(
                         onClick = {}, //TODO: navigate to create order screen
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = "create order")
-                        Text(text = "Create Order")
+                        //Text(text = "Create Order")
                     }
                 }
                 if (currentDeliveries.isEmpty()) {
@@ -97,28 +93,32 @@ fun CurrentDeliveriesSection(
                             onClick = { navController.navigate("deliveryDetails/${delivery.deliveryId}") },
                             modifier = Modifier.padding(10.dp)
                         ) {
-                            when (delivery.status) {
-                                "Pending" -> Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = "pending"
-                                )
-
-                                "Accepted" -> Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "accepted"
-                                )
-
-                                "In Transit" -> Icon(
-                                    imageVector = ImageVector.vectorResource(id = R.drawable.local_shipping_24px),
-                                    contentDescription = "in transit"
-                                )
-
-                                else -> Icon(
-                                    imageVector = Icons.Default.Warning,
-                                    contentDescription = "unknown"
-                                )
-                            }
-                            Text(text = "Delivery ${delivery.parcel.description}")
+//                            when (delivery.status) {
+//                                "Pending" -> Icon(
+//                                    imageVector = Icons.Default.Refresh,
+//                                    modifier=Modifier.padding(end = 5.dp),
+//                                    contentDescription = "pending"
+//                                )
+//
+//                                "Accepted" -> Icon(
+//                                    imageVector = Icons.Default.Check,
+//                                    modifier=Modifier.padding(end = 5.dp),
+//                                    contentDescription = "accepted"
+//                                )
+//
+//                                "In Transit" -> Icon(
+//                                    imageVector = ImageVector.vectorResource(id = R.drawable.local_shipping_24px),
+//                                    modifier=Modifier.padding(end = 5.dp),
+//                                    contentDescription = "in transit"
+//                                )
+//
+//                                else -> Icon(
+//                                    imageVector = Icons.Default.Warning,
+//                                    modifier=Modifier.padding(end = 5.dp),
+//                                    contentDescription = "unknown"
+//                                )
+//                            }
+                            Text(text = delivery.parcel.description)
                         }
                     }
                 }
@@ -135,9 +135,11 @@ fun PastDeliveriesSection(
 ) {
     val pastDeliveries by viewModel.pastDeliveries.collectAsState()
 
-    ElevatedCard(modifier = modifier
-        .fillMaxWidth()
-        .padding(10.dp)) {
+    ElevatedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+    ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(text = "Past Deliveries:", fontSize = 20.sp)
             if (pastDeliveries.isNotEmpty()) {
@@ -153,7 +155,10 @@ fun PastDeliveriesSection(
                                 },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
                         ) {
-                            Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text(
                                     delivery.parcel.description,
                                     modifier = Modifier.padding(10.dp)
