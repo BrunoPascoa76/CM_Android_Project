@@ -49,23 +49,36 @@ fun AppNavHost(
         }
         composable("home") {
             Navbar(navController) {
-                HomeScreen(navController=navController,userViewModel=userViewModel,deliveryHistoryViewModel=deliveryHistoryViewModel)
+                HomeScreen(
+                    navController = navController,
+                    userViewModel = userViewModel,
+                    deliveryHistoryViewModel = deliveryHistoryViewModel
+                )
             }
         }
         composable("profile") {
             Navbar(navController) {
-                ProfileScreen(userViewModel=userViewModel, addressViewModel = addressViewModel, navController = navController)
+                ProfileScreen(
+                    userViewModel = userViewModel,
+                    addressViewModel = addressViewModel,
+                    navController = navController
+                )
             }
         }
         composable("order") {
             val user by userViewModel.state.collectAsState()
+            if (user == null) navController.navigate("auth")
             Navbar(navController) {
-                deliveryViewModel.fetchCurrentDelivery(user)
-                OrderScreen(mockViewModel=orderViewModel,deliveryViewModel=deliveryViewModel,navController=navController)
+                deliveryHistoryViewModel.loadCurrentDeliveries(user!!.uid)
+                OrderScreen(
+                    mockViewModel = orderViewModel,
+                    deliveryHistoryViewModel = deliveryHistoryViewModel,
+                    navController = navController
+                )
             }
         }
-        composable("deliveryDetails/{deliveryId}"){ backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getString("deliveryId")?.toIntOrNull()?:0
+        composable("deliveryDetails/{deliveryId}") { backStackEntry ->
+            val deliveryId = backStackEntry.arguments?.getString("deliveryId")?.toIntOrNull() ?: 0
             DeliveryDetailsScreen(
                 deliveryId = deliveryId,
                 navController = navController,
@@ -73,8 +86,8 @@ fun AppNavHost(
                 userViewModel = userViewModel
             )
         }
-        composable("qrCodeScanner"){
-            QrCodeScannerScreen(navController=navController, viewModel = deliveryViewModel)
+        composable("qrCodeScanner") {
+            QrCodeScannerScreen(navController = navController, viewModel = deliveryViewModel)
         }
     }
 }

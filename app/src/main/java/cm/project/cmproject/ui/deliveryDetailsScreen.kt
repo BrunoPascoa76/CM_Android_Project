@@ -147,6 +147,7 @@ fun OrderDetails(
                 if (recipient != null) {
                     Text("Recipient Details", fontWeight = FontWeight.Bold)
                     DetailsRow("Name", recipient!!.fullName)
+                    DetailsRow("Phone Number", recipient!!.phoneNumber)
                     DetailsRow("Address", recipient!!.address.address)
                 }
 
@@ -155,6 +156,7 @@ fun OrderDetails(
                 if (sender != null) {
                     Text("Sender Details", fontWeight = FontWeight.Bold)
                     DetailsRow("Name", sender!!.fullName)
+                    DetailsRow("Phone Number", sender!!.phoneNumber)
                     DetailsRow("Address", sender!!.address.address)
                 }
             }

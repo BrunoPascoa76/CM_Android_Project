@@ -6,14 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import cm.project.cmproject.viewModels.DeliveryViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,24 +14,50 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cm.project.cmproject.models.Delivery
+import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
+import cm.project.cmproject.viewModels.DeliveryViewModel
 
 @Composable
-fun DeliveryProgressBar(modifier:Modifier=Modifier, deliveryViewModel: DeliveryViewModel = viewModel()) {
+fun DeliveryProgressBar(
+    modifier: Modifier = Modifier,
+    deliveryViewModel: DeliveryViewModel = viewModel()
+) {
     val delivery by deliveryViewModel.state.collectAsState()
 
+    DeliveryProgressBarComponent(delivery, modifier)
+}
+
+@Composable
+private fun DeliveryProgressBarComponent(
+    delivery: Delivery?,
+    modifier: Modifier
+) {
     if (delivery != null) {
-        val completedSteps = delivery!!.completedSteps
-        val steps = delivery!!.steps
+        val completedSteps = delivery.completedSteps
+        val steps = delivery.steps
         val progress = 0.5 //TODO: change to real value (once we get realtime db up and running)
-        Row(modifier=modifier.fillMaxWidth().horizontalScroll(state=rememberScrollState()), horizontalArrangement = Arrangement.Center) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .horizontalScroll(state = rememberScrollState()),
+            horizontalArrangement = Arrangement.Center
+        ) {
             if (steps.isEmpty()) {
                 Text("No steps available", style = TextStyle(fontSize = 16.sp))
-            }else{
+            } else {
                 for (i in steps.indices) {
                     val step = steps[i]
 
@@ -48,13 +66,26 @@ fun DeliveryProgressBar(modifier:Modifier=Modifier, deliveryViewModel: DeliveryV
                         isCompleted = i < completedSteps
                     )
                     if (i < steps.size - 1) {
-                        val barProgress= (if (i<completedSteps-1) 1f else (if(i==completedSteps-1) progress else 0f)).toFloat()
-                        ProgressBar(progress= barProgress)
+                        val barProgress =
+                            (if (i < completedSteps - 1) 1f else (if (i == completedSteps - 1) progress else 0f)).toFloat()
+                        ProgressBar(progress = barProgress)
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun DeliveryProgressBar(
+    modifier: Modifier = Modifier,
+    deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel(),
+    index: Int = 0
+) {
+    val deliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
+    val delivery = deliveries.getOrNull(index)
+
+    DeliveryProgressBarComponent(delivery, modifier)
 }
 
 @Composable
@@ -84,7 +115,7 @@ fun ProgressBar(
     progress: Float,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier=Modifier.padding(top=15.dp,start=4.dp,end=2.dp)) {
+    Box(modifier = Modifier.padding(top = 15.dp, start = 4.dp, end = 2.dp)) {
         LinearProgressIndicator(
             progress = { progress },
             modifier = modifier
