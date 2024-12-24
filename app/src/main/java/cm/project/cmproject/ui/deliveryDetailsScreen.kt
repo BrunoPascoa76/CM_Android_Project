@@ -38,12 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.viewModels.DeliveryViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.R
 import cm.project.cmproject.components.DeliveryProgressBar
+import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
@@ -83,13 +83,15 @@ fun DeliveryDetailsScreen(
         }
     ) { innerPadding ->
         Column(
-            modifier = modifier.padding(innerPadding).fillMaxSize(),
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ErrorMessage(deliveryViewModel)
             if (delivery == null) {
                 Box(
-                    modifier=Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
@@ -170,13 +172,15 @@ fun OrderDetails(
 private fun QrCode(deliveryId: Int) {
     val bitmap = generateQrCode(deliveryId)
     if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = "QR Code",
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-        )
+        Box(modifier = Modifier.background(Color.White)) {
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "QR Code",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+            )
+        }
     }
 }
 
