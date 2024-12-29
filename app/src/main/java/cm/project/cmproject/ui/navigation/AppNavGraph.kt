@@ -1,6 +1,5 @@
 package cm.project.cmproject.ui.navigation
 
-import OrderViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -10,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
@@ -78,7 +78,7 @@ fun AppNavHost(
             }
         }
         composable("deliveryDetails/{deliveryId}") { backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getString("deliveryId")?.toIntOrNull() ?: 0
+            val deliveryId = backStackEntry.arguments?.getString("deliveryId")
             DeliveryDetailsScreen(
                 deliveryId = deliveryId,
                 navController = navController,

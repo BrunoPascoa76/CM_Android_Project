@@ -2,36 +2,65 @@ package cm.project.cmproject.viewModels
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.os.Build
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cm.project.cmproject.models.DeliveryStatus
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import android.location.Address
 
-class MapViewModel: ViewModel() {
+class MapViewModel : ViewModel() {
+    private val _userLocation = MutableStateFlow<LatLng?>(null)
+    val userLocation: StateFlow<LatLng?> = _userLocation
 
-    // State to hold the user's location as LatLng (latitude and longitude)
-    private val _userLocation = mutableStateOf<LatLng?>(null)
-    val userLocation: State<LatLng?> = _userLocation
+    private val _selectedLocation = MutableStateFlow<LatLng?>(null)
+    val selectedLocation: StateFlow<LatLng?> = _selectedLocation
 
-    // State to hold the selected place location as LatLng
-    private val _selectedLocation = mutableStateOf<LatLng?>(null)
-    val selectedLocation: State<LatLng?> = _selectedLocation
+    fun selectLocation(location: LatLng) {
+        _selectedLocation.value = location
+    }
 
+    fun listenForDeliveryStatusUpdates() {
+        val database =
+            FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
+        val deliveryStatusRef = database.getReference("deliveryStatus")
 
-    // Function to fetch the user's location and update the state
+        deliveryStatusRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
+                deliveryStatus?.let {
+                    if (it.status == "IN_TRANSIT") {
+                        _userLocation.value = LatLng(it.latitude, it.longitude)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle possible errors.
+            }
+        })
+    }
+
     fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
         // Check if the location permission is granted
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             try {
                 // Fetch the last known location
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -48,26 +77,6 @@ class MapViewModel: ViewModel() {
             Timber.e("Location permission is not granted.")
         }
     }
-
-    // Function to geocode the selected place and update the selected location state
-/*
-    fun selectLocation(selectedPlace: String, context: Context) {
-        viewModelScope.launch {
-            val geocoder = Geocoder(context)
-            val addresses = withContext(Dispatchers.IO) {
-                // Perform geocoding on a background thread
-                geocoder.getFromLocationName(selectedPlace, 1)
-            }
-            if (!addresses.isNullOrEmpty()) {
-                // Update the selected location in the state
-                val address = addresses[0]
-                val latLng = LatLng(address.latitude, address.longitude)
-                _selectedLocation.value = latLng
-            } else {
-                Timber.tag("MapScreen").e("No location found for the selected place.")
-            }
-        }
-    }*/
 
     fun selectLocation(selectedPlace: String, context: Context) {
         viewModelScope.launch {
@@ -108,5 +117,4 @@ class MapViewModel: ViewModel() {
             }
         }
     }
-
 }

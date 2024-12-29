@@ -5,11 +5,11 @@ import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.models.User
 import cm.project.cmproject.repositories.DeliveryRepository
+import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import cm.project.cmproject.repositories.Result
 
 class DeliveryViewModel : ViewModel() {
     private val _state = MutableStateFlow<Delivery?>(null)
@@ -27,7 +27,7 @@ class DeliveryViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
-    fun fetchDelivery(deliveryId: Int) {
+    fun fetchDelivery(deliveryId: String) {
         _errorMessage.value = null
         viewModelScope.launch {
             when (val result = DeliveryRepository().getDeliveryById(deliveryId)) {
@@ -35,6 +35,7 @@ class DeliveryViewModel : ViewModel() {
                     _state.value = result.data
                     _errorMessage.value = null
                 }
+
                 is Result.Error -> {
                     _state.value = null
                     _errorMessage.value = result.exception.message
@@ -44,12 +45,12 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
-    fun fetchCurrentDelivery(user:User?){
-        if(user!=null){
+    fun fetchCurrentDelivery(user: User?) {
+        if (user != null) {
             viewModelScope.launch {
                 when (val result = DeliveryRepository().getAllByUserIdAndStatus(
                     user.uid,
-                    listOf("Pending","Accepted","In Transit")
+                    listOf("Pending", "Accepted", "In Transit")
                 )) {
                     is Result.Success -> {
                         _errorMessage.value = null
@@ -60,8 +61,9 @@ class DeliveryViewModel : ViewModel() {
                             _state.value = result.data[0]
                         }
                     }
+
                     is Result.Error -> {
-                        _state.value=null
+                        _state.value = null
                         _errorMessage.value = result.exception.message
                     }
                 }
@@ -70,14 +72,14 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun submitQRCode(result: String) {
-        if(_state.value?.deliveryId.toString() == result){
+        if (_state.value?.deliveryId.toString() == result) {
             incrementDeliveryStatus()
         }
     }
 
-    fun incrementDeliveryStatus(){
-        if(_state.value!=null) {
-            _state.value= _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
+    fun incrementDeliveryStatus() {
+        if (_state.value != null) {
+            _state.value = _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
             viewModelScope.launch {
                 DeliveryRepository().updateDelivery(_state.value!!)
             }

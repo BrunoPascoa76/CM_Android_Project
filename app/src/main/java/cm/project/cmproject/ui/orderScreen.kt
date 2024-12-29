@@ -1,7 +1,5 @@
 package cm.project.cmproject.ui
 
-import OrderState
-import OrderViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +34,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
 import cm.project.cmproject.components.DeliveryProgressBar
+import cm.project.cmproject.models.OrderState
+import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
