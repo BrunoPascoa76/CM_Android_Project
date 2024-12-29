@@ -114,4 +114,6 @@ dependencies {
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation(libs.kotlinx.serialization.json)
 
+    implementation("com.google.firebase:firebase-database-ktx:20.0.5")
+
 }

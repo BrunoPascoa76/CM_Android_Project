@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -28,6 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,7 +41,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,15 +56,16 @@ import com.google.zxing.WriterException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview(showBackground = true)
 fun DeliveryDetailsScreen(
     modifier: Modifier = Modifier,
-    deliveryId: Int = 123,
+    deliveryId: String?,
     navController: NavController = rememberNavController(),
     deliveryViewModel: DeliveryViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
 ) {
-    deliveryViewModel.fetchDelivery(deliveryId)
+    if (deliveryId != null) {
+        deliveryViewModel.fetchDelivery(deliveryId)
+    }
     val delivery by deliveryViewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -124,64 +129,98 @@ fun OrderDetails(
     val recipient by deliveryViewModel.recipient.collectAsState()
     val sender by deliveryViewModel.sender.collectAsState()
     val user by userViewModel.state.collectAsState()
-
+    var showQrCode by remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.padding(10.dp),
+        modifier = modifier
+            .padding(10.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        ElevatedCard {
-            Column(
+        if (showQrCode) {
+            QrCode(delivery!!.deliveryId)
+            ElevatedButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                    .padding(top = 20.dp),
+                onClick = { showQrCode = false }
             ) {
-                Text("Parcel Details", fontWeight = FontWeight.Bold)
-                DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
-                DetailsRow("Status", delivery?.status ?: "Unknown")
-
-                HorizontalDivider(thickness = 1.dp)
-
-                if (recipient != null) {
-                    Text("Recipient Details", fontWeight = FontWeight.Bold)
-                    DetailsRow("Name", recipient!!.fullName)
-                    DetailsRow("Phone Number", recipient!!.phoneNumber)
-                    DetailsRow("Address", recipient!!.address.address)
-                }
-
-                HorizontalDivider(thickness = 1.dp)
-
-                if (sender != null) {
-                    Text("Sender Details", fontWeight = FontWeight.Bold)
-                    DetailsRow("Name", sender!!.fullName)
-                    DetailsRow("Phone Number", sender!!.phoneNumber)
-                    DetailsRow("Address", sender!!.address.address)
-                }
+                Text(
+                    "Back to details",
+                    fontWeight = FontWeight.Bold
+                )
             }
-        }
-        DeliveryProgressBar(deliveryViewModel = deliveryViewModel)
-        if (user != null && user!!.role == "customer") {
-            QrCode(deliveryId = delivery!!.deliveryId)
         } else {
-            ElevatedButton(
-                onClick = { navController.navigate("qrCodeScanner") }
+            ElevatedCard {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text("Parcel Details", fontWeight = FontWeight.Bold)
+                    DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                    DetailsRow("Status", delivery?.status ?: "Unknown")
+
+                    HorizontalDivider(thickness = 1.dp)
+
+                    if (recipient != null) {
+                        Text("Recipient Details", fontWeight = FontWeight.Bold)
+                        DetailsRow("Name", recipient!!.fullName)
+                        DetailsRow("Phone Number", recipient!!.phoneNumber)
+                        DetailsRow("Address", recipient!!.address.address)
+                    }
+
+                    HorizontalDivider(thickness = 1.dp)
+
+                    if (sender != null) {
+                        Text("Sender Details", fontWeight = FontWeight.Bold)
+                        DetailsRow("Name", sender!!.fullName)
+                        DetailsRow("Phone Number", sender!!.phoneNumber)
+                        DetailsRow("Address", sender!!.address.address)
+                    }
+                }
+
+            }
+            Column(
+                modifier = Modifier.padding(top = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
-                        contentDescription = "Scan QR Code"
-                    )
-                    Text("Enter qr code")
+                DeliveryProgressBar(deliveryViewModel = deliveryViewModel)
+                if (user != null && user!!.role == "customer") {
+                    ElevatedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp),
+                        onClick = { showQrCode = true }
+                    ) {
+                        Text(
+                            "View QR Code",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                } else {
+                    ElevatedButton(
+                        onClick = { navController.navigate("qrCodeScanner") }
+                    ) {
+                        Row {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
+                                contentDescription = "Scan QR Code"
+                            )
+                            Text("Enter qr code")
+                        }
+                    }
                 }
             }
         }
+
     }
 }
 
 @Composable
-private fun QrCode(deliveryId: Int) {
+private fun QrCode(deliveryId: String) {
     val bitmap = generateQrCode(deliveryId)
     if (bitmap != null) {
         Box(modifier = Modifier.background(Color.White)) {
@@ -198,14 +237,21 @@ private fun QrCode(deliveryId: Int) {
 
 @Composable
 private fun DetailsRow(title: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(
             "${title}:",
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .weight(0.4f)
+                .weight(0.3f)
         )
-        Text(value, textAlign = TextAlign.End, modifier = Modifier.weight(0.6f))
+        Text(
+            value,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(0.7f)
+        )
     }
 }
 
@@ -229,10 +275,10 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
 }
 
 //Everyone just draws it pixel by pixel
-private fun generateQrCode(deliveryId: Int, size: Int = 200): Bitmap? {
+private fun generateQrCode(deliveryId: String, size: Int = 200): Bitmap? {
     return try {
         val bitMatrix =
-            MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, size, size)
+            MultiFormatWriter().encode(deliveryId, BarcodeFormat.QR_CODE, size, size)
         val width = bitMatrix.width
         val height = bitMatrix.height
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)

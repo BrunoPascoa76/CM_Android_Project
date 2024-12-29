@@ -13,7 +13,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +50,7 @@ fun HomeScreen(
     }
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(modifier = Modifier.size(100.dp))
+        Spacer(modifier = Modifier.size(70.dp))
         Text(text = "Hello, ${user?.fullName}", fontSize = 30.sp)
         CurrentDeliveriesSection(
             viewModel = deliveryHistoryViewModel,
@@ -65,6 +67,46 @@ fun CurrentDeliveriesSection(
     viewModel: DeliveryHistoryViewModel = viewModel()
 ) {
     val currentDeliveries by viewModel.currentDeliveries.collectAsState()
+    ElevatedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Create New Order",
+                fontSize = 20.sp,
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+            )
+            ElevatedButton(
+                onClick = {
+//                    navController.navigate("createOrder")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Create Order",
+                        modifier = Modifier
+                            .size(48.dp)
+                    )
+
+                }
+
+            }
+        }
+    }
 
     ElevatedCard(
         modifier = modifier
@@ -74,14 +116,6 @@ fun CurrentDeliveriesSection(
         Column(modifier = Modifier.padding(10.dp)) {
             Text(text = "Current Deliveries:", fontSize = 20.sp)
             LazyRow(verticalAlignment = Alignment.CenterVertically) {
-                item {
-                    Button(
-                        onClick = {}, //TODO: navigate to create order screen
-                    ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "create order")
-                        //Text(text = "Create Order")
-                    }
-                }
                 if (currentDeliveries.isEmpty()) {
                     item {
                         Text(text = "No current deliveries", modifier = Modifier.padding(10.dp))
@@ -91,6 +125,16 @@ fun CurrentDeliveriesSection(
                         val delivery = currentDeliveries[it]
                         Button(
                             onClick = { navController.navigate("deliveryDetails/${delivery.deliveryId}") },
+                            colors = ButtonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary,
+                                disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(
+                                    alpha = 0.5f
+                                ),
+                                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(
+                                    alpha = 0.5f
+                                )
+                            ),
                             modifier = Modifier.padding(10.dp)
                         ) {
 //                            when (delivery.status) {
