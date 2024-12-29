@@ -13,6 +13,7 @@ import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
+import cm.project.cmproject.ui.LobbyScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
@@ -20,6 +21,7 @@ import cm.project.cmproject.ui.QrCodeScannerScreen
 import cm.project.cmproject.viewModels.AddressViewModel
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
+import cm.project.cmproject.viewModels.PendingDeliveriesViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
 
@@ -38,6 +40,7 @@ fun AppNavHost(
     val deliveryViewModel: DeliveryViewModel = viewModel()
     val addressViewModel: AddressViewModel = viewModel()
     val deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
+    val pendingDeliveriesViewModel: PendingDeliveriesViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -88,6 +91,21 @@ fun AppNavHost(
         }
         composable("qrCodeScanner") {
             QrCodeScannerScreen(navController = navController, viewModel = deliveryViewModel)
+        }
+
+        composable("lobby") {
+            val user by userViewModel.state.collectAsState()
+            if (user != null && user!!.role == "driver") {
+                Navbar(navController) {
+                    LobbyScreen(
+                        navController = navController,
+                        userViewModel = userViewModel,
+                        pendingDeliveriesViewModel = pendingDeliveriesViewModel
+                    )
+                }
+            } else {
+                AuthTabs(navController = navController, viewModel = userViewModel)
+            }
         }
     }
 }
