@@ -45,6 +45,7 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
+
     fun fetchCurrentDelivery(user: User?) {
         if (user != null) {
             viewModelScope.launch {
