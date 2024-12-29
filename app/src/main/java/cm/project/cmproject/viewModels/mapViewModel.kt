@@ -33,10 +33,10 @@ class MapViewModel : ViewModel() {
         _selectedLocation.value = location
     }
 
-    fun listenForDeliveryStatusUpdates() {
+    fun listenForDeliveryStatusUpdates(deliveryId: String) {
         val database =
             FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
-        val deliveryStatusRef = database.getReference("deliveryStatus")
+        val deliveryStatusRef = database.getReference("deliveryStatus").child(deliveryId)
 
         deliveryStatusRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

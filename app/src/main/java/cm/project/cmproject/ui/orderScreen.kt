@@ -73,29 +73,32 @@ fun OrderScreen(
             locationPermissionState.launchPermissionRequest()
         }
     }
-    if (currentDeliveries.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No deliveries found")
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            HorizontalPager(
-                modifier = Modifier.weight(0.9f),
-                state = pagerState,
-            ) { index ->
-                orderPage(navController, orderState, deliveryHistoryViewModel, index)
+    Column(modifier = Modifier.padding(top = 30.dp)) {
+        if (currentDeliveries.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No deliveries found")
             }
-            if (currentDeliveries.size > 1) {
-                DotsIndicator(
-                    totalDots = currentDeliveries.size,
-                    state = pagerState
-                )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                HorizontalPager(
+                    modifier = Modifier.weight(0.9f),
+                    state = pagerState,
+                ) { index ->
+                    orderPage(navController, orderState, deliveryHistoryViewModel, index)
+                }
+                if (currentDeliveries.size > 0) {
+                    DotsIndicator(
+                        totalDots = currentDeliveries.size,
+                        state = pagerState
+                    )
+                }
             }
         }
     }
+
 }
 
 @Composable
@@ -103,13 +106,15 @@ fun DotsIndicator(
     totalDots: Int,
     state: PagerState,
     modifier: Modifier = Modifier,
-    selectedColor: Color = MaterialTheme.colorScheme.primary,
-    unselectedColor: Color = MaterialTheme.colorScheme.secondary,
+    selectedColor: Color = Color(0xFF4CAF50),
+    unselectedColor: Color = Color(0xFFB0BEC5),
 ) {
     val selectedIndex = state.currentPage
     val coroutineScope = rememberCoroutineScope()
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 20.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -117,7 +122,7 @@ fun DotsIndicator(
             val color = if (index == selectedIndex) selectedColor else unselectedColor
             Box(
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(32.dp)
                     .padding(horizontal = 5.dp, vertical = 5.dp)
                     .background(color, shape = CircleShape)
                     .clickable {
@@ -167,9 +172,9 @@ private fun orderPage(
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.visibility_24px),
-                        contentDescription = "See more"
+                        contentDescription = "View order details"
                     )
-                    Text("See more")
+                    Text("View order details")
                 }
             }
         }
