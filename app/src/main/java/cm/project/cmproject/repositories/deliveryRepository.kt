@@ -59,6 +59,17 @@ class DeliveryRepository {
         }
     }
 
+    suspend fun getDeliveriesByDriverId(driverId: String): Result<List<Delivery>> {
+        return try {
+            val snapshot = Firebase.firestore.collection("deliveries")
+                .whereEqualTo("driverId", driverId)
+                .get().await()
+            Result.Success(snapshot.documents.mapNotNull { it.toObject<Delivery>() })
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
     suspend fun getAllByUserIdAndStatus(
         userId: String,
         status: List<String>

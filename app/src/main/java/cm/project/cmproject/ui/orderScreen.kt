@@ -2,10 +2,12 @@ package cm.project.cmproject.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,8 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,7 +67,7 @@ fun OrderScreen(
     val orderState by mockViewModel.orderState.collectAsState()
     val currentDeliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
     val pagerState = rememberPagerState(pageCount = { currentDeliveries.size })
-
+    val coroutineScope = rememberCoroutineScope()
     // Request location permissions dynamically
     val locationPermissionState =
         rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -73,29 +77,64 @@ fun OrderScreen(
             locationPermissionState.launchPermissionRequest()
         }
     }
-    if (currentDeliveries.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No deliveries found")
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            HorizontalPager(
-                modifier = Modifier.weight(0.9f),
-                state = pagerState,
-            ) { index ->
-                orderPage(navController, orderState, deliveryHistoryViewModel, index)
+    Column(modifier = Modifier.padding(top = 30.dp)) {
+        if (currentDeliveries.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No deliveries found")
             }
-            if (currentDeliveries.size > 1) {
-                DotsIndicator(
-                    totalDots = currentDeliveries.size,
-                    state = pagerState
-                )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                HorizontalPager(
+                    modifier = Modifier.weight(0.9f),
+                    state = pagerState,
+                    userScrollEnabled = false
+                ) { index ->
+                    orderPage(navController, orderState, deliveryHistoryViewModel, index)
+                }
+                if (currentDeliveries.size > 1) {
+                    //add buttons to navigate between orders
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (pagerState.currentPage > 0) {
+                            ElevatedButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                    }
+                                }
+                            ) {
+                                Text("Previous")
+                            }
+                        }
+                        if (pagerState.currentPage < currentDeliveries.size - 1) {
+                            ElevatedButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                    }
+                                }
+                            ) {
+                                Text("Next")
+                            }
+                        }
+                    }
+                    DotsIndicator(
+                        totalDots = currentDeliveries.size,
+                        state = pagerState
+                    )
+
+                }
             }
         }
     }
+
 }
 
 @Composable
@@ -103,13 +142,15 @@ fun DotsIndicator(
     totalDots: Int,
     state: PagerState,
     modifier: Modifier = Modifier,
-    selectedColor: Color = MaterialTheme.colorScheme.primary,
-    unselectedColor: Color = MaterialTheme.colorScheme.secondary,
+    selectedColor: Color = Color(0xFF4CAF50),
+    unselectedColor: Color = Color(0xFFB0BEC5),
 ) {
     val selectedIndex = state.currentPage
     val coroutineScope = rememberCoroutineScope()
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 20.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -117,7 +158,7 @@ fun DotsIndicator(
             val color = if (index == selectedIndex) selectedColor else unselectedColor
             Box(
                 modifier = Modifier
-                    .size(30.dp)
+                    .size(32.dp)
                     .padding(horizontal = 5.dp, vertical = 5.dp)
                     .background(color, shape = CircleShape)
                     .clickable {
@@ -152,26 +193,9 @@ private fun orderPage(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Track the Order",
+                text = "Track your orders",
                 style = MaterialTheme.typography.titleLarge
             )
-            //TODO: hide this if not a driver or if there's no delivery
-            ElevatedButton(
-                enabled = currentDelivery != null,
-                onClick = {
-                    navController.navigate("deliveryDetails/${currentDelivery?.deliveryId}")
-                }) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.visibility_24px),
-                        contentDescription = "See more"
-                    )
-                    Text("See more")
-                }
-            }
         }
 
         DeliveryProgressBar(
@@ -183,14 +207,36 @@ private fun orderPage(
         // Google Map
         Box(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxSize()
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f)
+                .clip(MaterialTheme.shapes.medium)
         ) {
             OrderMap(
                 pickupLocation = orderState.pickupLocation,
                 currentLocation = orderState.currentLocation,
                 deliveryLocation = orderState.deliveryLocation
             )
+        }
+
+        //TODO: hide this if not a driver or if there's no delivery
+        ElevatedButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp),
+            enabled = currentDelivery != null,
+            onClick = {
+                navController.navigate("deliveryDetails/${currentDelivery?.deliveryId}")
+            }) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.visibility_24px),
+                    contentDescription = "View order details"
+                )
+                Text("View order details")
+            }
         }
     }
 }
@@ -206,7 +252,11 @@ fun OrderMap(
     }
 
     GoogleMap(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures { /* Consume touch events and stay in map area */ }
+            },
         cameraPositionState = cameraPositionState,
         properties = MapProperties(isMyLocationEnabled = false),
         uiSettings = MapUiSettings(zoomControlsEnabled = true)

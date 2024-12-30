@@ -82,37 +82,10 @@ fun ProfileScreen(
 
     Column(
         modifier = modifier
-            .padding(horizontal = 10.dp)
+            .padding(top = 30.dp, start = 10.dp, end = 10.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            ElevatedButton(
-                onClick = { isEditing = !isEditing },
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = if (isEditing) Color.Red else Color.Green
-                )
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (!isEditing) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            modifier = Modifier.padding(end = 5.dp)
-                        )
-                        Text("Edit")
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Cancel",
-                            modifier = Modifier.padding(end = 5.dp)
-                        )
-                        Text("Cancel")
-                    }
-                }
-            }
-        }
-
         Text(text = if (isEditing) "Edit profile" else "Profile details", fontSize = 20.sp)
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -190,6 +163,7 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(0.8f),
                         singleLine = true,
                         label = { Text("Phone Number") },
                         value = phoneNumber,
@@ -207,7 +181,7 @@ fun ProfileScreen(
 
                     AddressInput(
                         addressViewModel = addressViewModel,
-                        modifier = Modifier.fillMaxWidth(0.7f)
+                        modifier = Modifier.fillMaxWidth(0.8f)
                     )
                     InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter your address")
 
@@ -260,6 +234,7 @@ fun ProfileScreen(
                         }
                     } else {
                         ElevatedButton(
+                            modifier = Modifier.padding(top = 10.dp),
                             enabled = validFieldsUniversal.all { it },
                             onClick = {
                                 userViewModel.update(
@@ -273,8 +248,43 @@ fun ProfileScreen(
                                 isEditing = false
                             }
                         ) {
-                            Text("Update")
+                            Text("Save")
                         }
+                    }
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp, bottom = 10.dp)
+        ) {
+            ElevatedButton(
+                onClick = { isEditing = !isEditing },
+                colors = ButtonDefaults.elevatedButtonColors(
+                    contentColor = Color.White,
+                    containerColor = if (isEditing) Color(0xFFD32F2F) else Color(0xFF388E3C)
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                ) {
+                    if (!isEditing) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
+                        Text("Edit")
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Cancel",
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
+                        Text("Cancel")
                     }
                 }
             }
@@ -301,7 +311,9 @@ fun ProfileScreen(
 @Composable
 fun DetailsRow(modifier: Modifier = Modifier, label: String, icon: ImageVector, value: String) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

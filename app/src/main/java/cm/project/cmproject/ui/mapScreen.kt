@@ -47,14 +47,18 @@ fun MapScreen(mapViewModel: MapViewModel) {
 
     LaunchedEffect(Unit) {
         when (PackageManager.PERMISSION_GRANTED) {
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
+            ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) -> {
                 mapViewModel.fetchUserLocation(context, fusedLocationClient)
             }
+
             else -> {
                 permissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
-        mapViewModel.listenForDeliveryStatusUpdates()
+        mapViewModel.listenForDeliveryStatusUpdates("")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
