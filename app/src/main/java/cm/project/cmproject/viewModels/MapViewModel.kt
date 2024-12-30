@@ -20,6 +20,8 @@ import androidx.compose.runtime.getValue
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 
 class MapViewModel: ViewModel() {
@@ -33,9 +35,23 @@ class MapViewModel: ViewModel() {
     val selectedLocation: State<LatLng?> = _selectedLocation
 
     // State to hold the address of the selected location
-    private val _selectedAddress = mutableStateOf("")
-    val selectedAddress: State<String> = _selectedAddress
+    private val _searchedText = mutableStateOf("")
+    val searchedText: State<String> = _searchedText
 
+    private val _markers = mutableStateOf<List<MarkerData>>(emptyList())
+    val markers: State<List<MarkerData>> = _markers
+
+    lateinit var geoCoder: Geocoder
+
+    // Define a MarkerData class to hold the position and title of a marker
+    data class MarkerData(val position: LatLng, val title: String)
+
+    fun addMarker(markerData: MarkerData) {
+        _markers.value = _markers.value + markerData
+    }
+
+    private val _selectedLocationAddress = MutableStateFlow("")
+    val selectedLocationAddress: StateFlow<String> = _selectedLocationAddress
 
     // Function to fetch the user's location and update the state
     fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
@@ -115,6 +131,12 @@ class MapViewModel: ViewModel() {
                     }
                 }
             }
+        }
+    }
+    fun getAddress(latLng: LatLng) {
+        viewModelScope.launch {
+            val address = geoCoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+            _searchedText.value = address?.get(0)?.getAddressLine(0).toString()
         }
     }
 }

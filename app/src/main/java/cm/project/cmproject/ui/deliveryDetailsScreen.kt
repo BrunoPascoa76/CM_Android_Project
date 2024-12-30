@@ -38,12 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.viewModels.DeliveryViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.R
 import cm.project.cmproject.components.DeliveryProgressBar
+import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
@@ -83,13 +83,15 @@ fun DeliveryDetailsScreen(
         }
     ) { innerPadding ->
         Column(
-            modifier = modifier.padding(innerPadding).fillMaxSize(),
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ErrorMessage(deliveryViewModel)
             if (delivery == null) {
                 Box(
-                    modifier=Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
@@ -135,7 +137,7 @@ fun OrderDetails(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                DetailsRow("Title", delivery?.parcel?.label ?: "N/A")
                 DetailsRow("Status", delivery?.status ?: "Unknown")
                 if (recipient != null) {
                     DetailsRow("Recipient Name", recipient!!.fullName)
