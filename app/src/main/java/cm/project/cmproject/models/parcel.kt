@@ -8,7 +8,7 @@ data class Dimensions(
 
 data class Parcel(
     val parcelId: Int = 0,
-    val description: String = "",
+    val label: String = "",
     val isFragile: Boolean = false,
     val weight: Double = 0.0,
     val dimensions: Dimensions = Dimensions()

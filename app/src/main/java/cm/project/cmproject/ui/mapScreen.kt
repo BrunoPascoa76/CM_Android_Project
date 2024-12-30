@@ -4,39 +4,46 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import cm.project.cmproject.components.SearchBar
+import cm.project.cmproject.utils.ManifestUtils
+import cm.project.cmproject.viewModels.DeliveryViewModel
+import cm.project.cmproject.viewModels.MapViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.Places
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import cm.project.cmproject.components.SearchBar
-import cm.project.cmproject.viewModels.MapViewModel
-import cm.project.cmproject.viewModels.DeliveryViewModel
-import cm.project.cmproject.utils.ManifestUtils
-import com.google.android.libraries.places.api.Places
-import com.google.android.gms.maps.model.LatLng
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
 import timber.log.Timber
 
 
 @Composable
-fun MapScreen(mapViewModel: MapViewModel, deliveryViewModel: DeliveryViewModel, navController: NavHostController, addressType: String) {
+fun MapScreen(
+    mapViewModel: MapViewModel,
+    deliveryViewModel: DeliveryViewModel,
+    navController: NavHostController,
+    addressType: String
+) {
     // Obtain the current context
     val context = LocalContext.current
 
@@ -84,53 +91,64 @@ fun MapScreen(mapViewModel: MapViewModel, deliveryViewModel: DeliveryViewModel, 
     LaunchedEffect(Unit) {
         when (PackageManager.PERMISSION_GRANTED) {
             // Check if the location permission is already granted
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) -> {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) -> {
                 // Fetch the user's location and update the camera
                 mapViewModel.fetchUserLocation(context, fusedLocationClient)
             }
+
             else -> {
                 // Request the location permission if it has not been granted
                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
-/*
-    LaunchedEffect(cameraPositionState.isMoving) {
-        if (!cameraPositionState.isMoving) {
-            mapViewModel.getAddress(cameraPositionState.position.target)
+    /*
+        LaunchedEffect(cameraPositionState.isMoving) {
+            if (!cameraPositionState.isMoving) {
+                mapViewModel.getAddress(cameraPositionState.position.target)
+            }
         }
-    }
-*/
+    */
     // Layout that includes the search bar and the map, arranged in a vertical column
     Box(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(18.dp)) // Add a spacer with a height of 18dp to push the search bar down
 
         // Add the search bar component
-            SearchBar(
-                onPlaceSelected = { place ->
-                    // When a place is selected from the search bar, update the selected location
-                    mapViewModel.selectLocation(place, context)
-                    updateAddress(place.address)
-                }
-            )
-            Button(
-                onClick = {
-                    val selectedAddress = mapViewModel.selectedLocationAddress
-                    updateAddress(selectedAddress)
-                    navController.navigate("createneworder")
-                },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(
-                        alignment = Alignment.BottomCenter
-                    ) // Position at the bottom center
-            ) {
-                Text("Return to Order")
-            }
+        SearchBar(
+            onPlaceSelected = { place ->
+                // When a place is selected from the search bar, update the selected location
+                mapViewModel.selectLocation(place, context)
+                updateAddress(place)
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(
+                    alignment = Alignment.TopCenter
+                )
+        )
+        Button(
+            onClick = {
+                val selectedAddress = mapViewModel.selectedLocationAddress.value
+                updateAddress(selectedAddress)
+                navController.navigate("createneworder")
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(
+                    alignment = Alignment.BottomCenter
+                ) // Position at the bottom center
+        ) {
+            Text("Return to Order")
+        }
 
         // Display the Google Map
         GoogleMap(
-            modifier = Modifier.fillMaxSize().padding(bottom = 80.dp), // Adjust padding to avoid overlap
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp), // Adjust padding to avoid overlap
             cameraPositionState = cameraPositionState,
             onMapClick = { latLng ->
                 clickedLocation.value = latLng // Update clicked location

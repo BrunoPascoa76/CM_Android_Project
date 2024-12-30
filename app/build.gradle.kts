@@ -97,6 +97,8 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.places.v350)
     implementation(libs.androidx.navigation.compose.v285)
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
 
 
     // Google Maps SDK for Android
