@@ -123,7 +123,7 @@ class DeliveryRepository {
                         FirebaseFirestoreException.Code.ABORTED
                     )
                 }
-            }
+            }.await()
             Result.Success(true)
         } catch (e: Exception) {
             Result.Error(e)
