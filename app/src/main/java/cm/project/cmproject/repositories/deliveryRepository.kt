@@ -3,6 +3,7 @@ package cm.project.cmproject.repositories
 import cm.project.cmproject.models.Delivery
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Filter
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
@@ -74,6 +75,45 @@ class DeliveryRepository {
                 .whereIn("status", status)
                 .get().await()
             Result.Success(snapshot.documents.mapNotNull { it.toObject<Delivery>() })
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    suspend fun assignSelfToDelivery(
+        deliveryId: String,
+        userId: String
+    ): Result<Boolean> {
+        return try {
+            val db = Firebase.firestore
+            val deliveryRef = db.collection("deliveries").document(deliveryId)
+            val pendingDeliveryRef = db.collection("pendingDeliveries").document(deliveryId)
+
+            //to help avoid race conditions, this is run as a transaction
+            db.runTransaction { transaction ->
+                val deliverySnapshot = transaction.get(pendingDeliveryRef)
+
+                if (deliverySnapshot.exists()) {
+                    transaction.delete(pendingDeliveryRef)
+                    var delivery = deliverySnapshot.toObject<Delivery>()
+
+                    if (delivery != null) {
+                        delivery = delivery.copy(driverId = userId)
+                        transaction.set(deliveryRef, delivery)
+                    } else {
+                        throw FirebaseFirestoreException(
+                            "Delivery not found/already taken",
+                            FirebaseFirestoreException.Code.ABORTED
+                        )
+                    }
+                } else {
+                    throw FirebaseFirestoreException(
+                        "Delivery not found/already taken",
+                        FirebaseFirestoreException.Code.ABORTED
+                    )
+                }
+            }
+            Result.Success(true)
         } catch (e: Exception) {
             Result.Error(e)
         }
