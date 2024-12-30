@@ -52,6 +52,21 @@ fun Navbar(
                     selected = currentRoute == "order",
                     onClick = { navController.navigate("order") }
                 )
+
+                if (user?.role == "driver") { //hides to customers
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.local_shipping_24px),
+                                contentDescription = "Lobby"
+                            )
+                        },
+                        label = { Text("Lobby") },
+                        selected = currentRoute == "lobby",
+                        onClick = { navController.navigate("lobby") }
+                    )
+                }
+
                 NavigationBarItem(
                     modifier = Modifier.padding(bottom = 0.dp),
                     icon = {
@@ -64,20 +79,6 @@ fun Navbar(
                     selected = currentRoute == "profile",
                     onClick = { navController.navigate("profile") }
                 )
-                if (user?.role == "driver") {
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.local_shipping_24px),
-                                contentDescription = "Lobby"
-                            )
-                        },
-                        label = { Text("Lobby") },
-                        selected = currentRoute == "lobby",
-                        onClick = { navController.navigate("lobby") }
-                    )
-
-                }
             }
         },
 
