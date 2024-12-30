@@ -87,6 +87,20 @@ fun OrderScreen(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+                // Title
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Track your orders",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+                
                 HorizontalPager(
                     modifier = Modifier.weight(0.9f),
                     state = pagerState,
@@ -182,19 +196,13 @@ private fun orderPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Title
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        currentDelivery?.parcel?.description?.let {
             Text(
-                text = "Track your orders",
-                style = MaterialTheme.typography.titleLarge
+                text = it,
+                style = MaterialTheme.typography.titleMedium
             )
         }
 

@@ -109,7 +109,11 @@ class DeliveryRepository {
                     var delivery = deliverySnapshot.toObject<Delivery>()
 
                     if (delivery != null) {
-                        delivery = delivery.copy(driverId = userId)
+                        delivery = delivery.copy(
+                            driverId = userId,
+                            status = "Accepted",
+                            completedSteps = 1
+                        )
                         transaction.set(deliveryRef, delivery)
                     } else {
                         throw FirebaseFirestoreException(
