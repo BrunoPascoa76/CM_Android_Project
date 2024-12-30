@@ -5,16 +5,19 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.viewModels.PendingDeliveriesViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 import timber.log.Timber
 
 @Composable
+@Preview(showBackground = true)
 fun LobbyScreen(
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navController: NavController=rememberNavController(),
     userViewModel: UserViewModel = viewModel(),
     pendingDeliveriesViewModel: PendingDeliveriesViewModel = viewModel()
 ) {
@@ -34,4 +37,6 @@ fun LobbyScreen(
             Timber.tag("pendingDeliveries").d("Unsubscribed")
         }
     }
+
+
 }

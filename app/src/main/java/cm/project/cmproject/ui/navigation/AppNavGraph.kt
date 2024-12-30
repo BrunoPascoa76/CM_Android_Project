@@ -51,7 +51,7 @@ fun AppNavHost(
             AuthTabs(navController = navController, viewModel = userViewModel)
         }
         composable("home") {
-            Navbar(navController) {
+            Navbar(navController, userViewModel) {
                 HomeScreen(
                     navController = navController,
                     userViewModel = userViewModel,
@@ -60,7 +60,7 @@ fun AppNavHost(
             }
         }
         composable("profile") {
-            Navbar(navController) {
+            Navbar(navController, userViewModel) {
                 ProfileScreen(
                     userViewModel = userViewModel,
                     addressViewModel = addressViewModel,
@@ -71,7 +71,7 @@ fun AppNavHost(
         composable("order") {
             val user by userViewModel.state.collectAsState()
             if (user == null) navController.navigate("auth")
-            Navbar(navController) {
+            Navbar(navController, userViewModel) {
                 deliveryHistoryViewModel.loadCurrentDeliveries(user!!.uid)
                 OrderScreen(
                     mockViewModel = orderViewModel,
@@ -96,7 +96,7 @@ fun AppNavHost(
         composable("lobby") {
             val user by userViewModel.state.collectAsState()
             if (user != null && user!!.role == "driver") {
-                Navbar(navController) {
+                Navbar(navController, userViewModel) {
                     LobbyScreen(
                         navController = navController,
                         userViewModel = userViewModel,
