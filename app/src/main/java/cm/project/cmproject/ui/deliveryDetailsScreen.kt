@@ -54,7 +54,7 @@ import com.google.zxing.WriterException
 @Preview(showBackground = true)
 fun DeliveryDetailsScreen(
     modifier: Modifier = Modifier,
-    deliveryId: Int = 123,
+    deliveryId: String = "123",
     navController: NavController = rememberNavController(),
     deliveryViewModel: DeliveryViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
@@ -169,7 +169,7 @@ fun OrderDetails(
 }
 
 @Composable
-private fun QrCode(deliveryId: Int) {
+private fun QrCode(deliveryId: String) {
     val bitmap = generateQrCode(deliveryId)
     if (bitmap != null) {
         Image(
@@ -210,7 +210,7 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
 }
 
 //Everyone just draws it pixel by pixel
-private fun generateQrCode(deliveryId: Int, size: Int = 200): Bitmap? {
+private fun generateQrCode(deliveryId: String, size: Int = 200): Bitmap? {
     return try {
         val bitMatrix =
             MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, size, size)

@@ -4,7 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -113,7 +113,11 @@ fun MapScreen(
         }
     */
     // Layout that includes the search bar and the map, arranged in a vertical column
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .fillMaxSize()
+    ) {
         Spacer(modifier = Modifier.height(18.dp)) // Add a spacer with a height of 18dp to push the search bar down
 
         // Add the search bar component
@@ -126,19 +130,21 @@ fun MapScreen(
             modifier = Modifier
                 .padding(16.dp)
                 .align(
-                    alignment = Alignment.TopCenter
+                    alignment = Alignment.CenterHorizontally
                 )
         )
         Button(
             onClick = {
                 val selectedAddress = mapViewModel.selectedLocationAddress.value
-                updateAddress(selectedAddress)
+                if (selectedAddress.isNotEmpty()) {
+                    updateAddress(selectedAddress) // Pass to the ViewModel for syncing
+                }
                 navController.navigate("createneworder")
             },
             modifier = Modifier
                 .padding(16.dp)
                 .align(
-                    alignment = Alignment.BottomCenter
+                    alignment = Alignment.CenterHorizontally
                 ) // Position at the bottom center
         ) {
             Text("Return to Order")

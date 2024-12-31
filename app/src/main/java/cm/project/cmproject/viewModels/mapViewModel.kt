@@ -2,6 +2,7 @@ package cm.project.cmproject.viewModels
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import androidx.compose.runtime.State
@@ -12,19 +13,14 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import android.location.Address
-import androidx.compose.runtime.getValue
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.FetchPlaceRequest
-import com.google.android.libraries.places.api.net.PlacesClient
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 
-class MapViewModel: ViewModel() {
+class MapViewModel : ViewModel() {
 
     // State to hold the user's location as LatLng (latitude and longitude)
     private val _userLocation = mutableStateOf<LatLng?>(null)
@@ -56,7 +52,11 @@ class MapViewModel: ViewModel() {
     // Function to fetch the user's location and update the state
     fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
         // Check if the location permission is granted
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             try {
                 // Fetch the last known location
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -75,24 +75,24 @@ class MapViewModel: ViewModel() {
     }
 
     // Function to geocode the selected place and update the selected location state
-/*
-    fun selectLocation(selectedPlace: String, context: Context) {
-        viewModelScope.launch {
-            val geocoder = Geocoder(context)
-            val addresses = withContext(Dispatchers.IO) {
-                // Perform geocoding on a background thread
-                geocoder.getFromLocationName(selectedPlace, 1)
+    /*
+        fun selectLocation(selectedPlace: String, context: Context) {
+            viewModelScope.launch {
+                val geocoder = Geocoder(context)
+                val addresses = withContext(Dispatchers.IO) {
+                    // Perform geocoding on a background thread
+                    geocoder.getFromLocationName(selectedPlace, 1)
+                }
+                if (!addresses.isNullOrEmpty()) {
+                    // Update the selected location in the state
+                    val address = addresses[0]
+                    val latLng = LatLng(address.latitude, address.longitude)
+                    _selectedLocation.value = latLng
+                } else {
+                    Timber.tag("MapScreen").e("No location found for the selected place.")
+                }
             }
-            if (!addresses.isNullOrEmpty()) {
-                // Update the selected location in the state
-                val address = addresses[0]
-                val latLng = LatLng(address.latitude, address.longitude)
-                _selectedLocation.value = latLng
-            } else {
-                Timber.tag("MapScreen").e("No location found for the selected place.")
-            }
-        }
-    }*/
+        }*/
 
     fun selectLocation(selectedPlace: String, context: Context) {
         viewModelScope.launch {
@@ -133,10 +133,18 @@ class MapViewModel: ViewModel() {
             }
         }
     }
+
     fun getAddress(latLng: LatLng) {
         viewModelScope.launch {
-            val address = geoCoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
-            _searchedText.value = address?.get(0)?.getAddressLine(0).toString()
+            try {
+                val addresses = withContext(Dispatchers.IO) {
+                    geoCoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+                }
+                _searchedText.value =
+                    addresses?.firstOrNull()?.getAddressLine(0) ?: "Address not found"
+            } catch (e: Exception) {
+                Timber.e("Error fetching address: ${e.localizedMessage}")
+            }
         }
     }
 }

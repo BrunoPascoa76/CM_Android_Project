@@ -6,11 +6,11 @@ import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.models.User
 import cm.project.cmproject.repositories.DeliveryRepository
+import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import cm.project.cmproject.repositories.Result
 import timber.log.Timber
 
 class DeliveryViewModel : ViewModel() {
@@ -32,7 +32,13 @@ class DeliveryViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
-    fun fetchDelivery(deliveryId: Int) {
+    private val _fromAddress = MutableStateFlow("")
+    val fromAddress = _fromAddress.asStateFlow()
+
+    private val _toAddress = MutableStateFlow("")
+    val toAddress = _toAddress.asStateFlow()
+
+    fun fetchDelivery(deliveryId: String) {
         _errorMessage.value = null
         viewModelScope.launch {
             when (val result = DeliveryRepository().getDeliveryById(deliveryId)) {
@@ -40,6 +46,7 @@ class DeliveryViewModel : ViewModel() {
                     _state.value = result.data
                     _errorMessage.value = null
                 }
+
                 is Result.Error -> {
                     _state.value = null
                     _errorMessage.value = result.exception.message
@@ -49,12 +56,12 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
-    fun fetchCurrentDelivery(user:User?){
-        if(user!=null){
+    fun fetchCurrentDelivery(user: User?) {
+        if (user != null) {
             viewModelScope.launch {
                 when (val result = DeliveryRepository().getAllByUserIdAndStatus(
                     user.uid,
-                    listOf("Pending","Accepted","In Transit")
+                    listOf("Pending", "Accepted", "In Transit")
                 )) {
                     is Result.Success -> {
                         _errorMessage.value = null
@@ -65,8 +72,9 @@ class DeliveryViewModel : ViewModel() {
                             _state.value = result.data[0]
                         }
                     }
+
                     is Result.Error -> {
-                        _state.value=null
+                        _state.value = null
                         _errorMessage.value = result.exception.message
                     }
                 }
@@ -75,14 +83,14 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun submitQRCode(result: String) {
-        if(_state.value?.deliveryId.toString() == result){
+        if (_state.value?.deliveryId.toString() == result) {
             incrementDeliveryStatus()
         }
     }
 
-    fun incrementDeliveryStatus(){
-        if(_state.value!=null) {
-            _state.value= _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
+    fun incrementDeliveryStatus() {
+        if (_state.value != null) {
+            _state.value = _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
             viewModelScope.launch {
                 DeliveryRepository().updateDelivery(_state.value!!)
             }
@@ -137,14 +145,39 @@ class DeliveryViewModel : ViewModel() {
         }
     }
 
-    fun createDelivery(userId: String, fromAddress: String, toAddress: String) {
+    fun createDelivery(
+        parcelId: String,
+        deliveryId: String,
+        userId: String,
+        fromAddress: String,
+        toAddress: String,
+        email: String,
+        phoneNumber: String,
+        label: String,
+        isFragile: Boolean,
+        weight: String,
+        length: String,
+        width: String,
+        height: String
+    ) {
         viewModelScope.launch {
             val newDelivery = Delivery(
+                parcelId = parcelId,
+                deliveryId = deliveryId,
+                recipientId = userId,
                 senderId = userId,
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 status = "Pending",
-                completedSteps = 0
+                completedSteps = 0,
+                email = email,
+                phoneNumber = phoneNumber,
+                label = label,
+                isFragile = isFragile,
+                weight = weight,
+                length = length,
+                width = width,
+                height = height
             )
             when (val deliveryResult = DeliveryRepository().insertDelivery(newDelivery)) {
                 is Result.Success -> {
@@ -177,10 +210,10 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun updateFromAddress(newAddress: String) {
-        _state.value = _state.value?.copy(fromAddress = newAddress) ?: Delivery(fromAddress = newAddress)
+        _fromAddress.value = newAddress
     }
 
     fun updateToAddress(newAddress: String) {
-        _state.value = _state.value?.copy(toAddress = newAddress) ?: Delivery(toAddress = newAddress)
+        _toAddress.value = newAddress
     }
 }
