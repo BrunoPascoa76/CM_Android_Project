@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId = "cm.project.cmproject"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -124,4 +124,5 @@ dependencies {
 
     // optional - GCMNetworkManager support
     implementation(libs.androidx.work.gcm)
+
 }

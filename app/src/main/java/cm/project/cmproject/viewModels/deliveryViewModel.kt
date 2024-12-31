@@ -10,6 +10,7 @@ import cm.project.cmproject.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 class DeliveryViewModel : ViewModel() {
     private val _state = MutableStateFlow<Delivery?>(null)
@@ -74,13 +75,23 @@ class DeliveryViewModel : ViewModel() {
 
     fun submitQRCode(result: String) {
         if (_state.value?.deliveryId.toString() == result) {
-            incrementDeliveryStatus()
+            completeCurrentStep()
         }
     }
 
-    fun incrementDeliveryStatus() {
+    fun completeCurrentStep() {
         if (_state.value != null) {
-            _state.value = _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
+            val steps = _state.value!!.steps.toMutableList() //create a copy
+            if (steps.isNotEmpty()) {
+                steps[_state.value!!.completedSteps] = steps[_state.value!!.completedSteps].copy(
+                    isCompleted = true,
+                    completionDate = LocalDateTime.now()
+                )
+            }
+            _state.value = _state.value!!.copy(
+                steps = steps,
+                completedSteps = _state.value!!.completedSteps + 1
+            )
             viewModelScope.launch {
                 DeliveryRepository().updateDelivery(_state.value!!)
             }

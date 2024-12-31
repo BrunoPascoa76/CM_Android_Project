@@ -22,6 +22,7 @@ navigationDynamicFeaturesFragment = "2.8.4"
 navigationFragment = "2.8.4"
 navigationTesting = "2.8.4"
 navigationUi = "2.8.4"
+protobufJava = "3.22.3"
 vectordrawable = "1.2.0"
 googleMaps = "19.0.0" # Google Maps SDK
 googleMapsCompose = "4.3.3" # Maps Compose
@@ -77,6 +78,7 @@ google-accompanist-permissions = { module = "com.google.accompanist:accompanist-
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 #play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJava" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 [plugins]
