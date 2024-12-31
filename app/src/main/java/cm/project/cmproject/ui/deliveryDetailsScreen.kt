@@ -30,9 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,26 +65,21 @@ fun DeliveryDetailsScreen(
     }
     val delivery by deliveryViewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            CenterAlignedTopAppBar(title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = { navController.navigateUp() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Text("Delivery Details")
-                    }
+    Scaffold(modifier = modifier, topBar = {
+        CenterAlignedTopAppBar(title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
                 }
-            })
-        }
-    ) { innerPadding ->
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text("Delivery Details")
+                }
+            }
+        })
+    }) { innerPadding ->
         Column(
             modifier = modifier
                 .padding(innerPadding)
@@ -97,8 +89,7 @@ fun DeliveryDetailsScreen(
             ErrorMessage(deliveryViewModel)
             if (delivery == null) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.width(64.dp),
@@ -129,7 +120,7 @@ fun OrderDetails(
     val recipient by deliveryViewModel.recipient.collectAsState()
     val sender by deliveryViewModel.sender.collectAsState()
     val user by userViewModel.state.collectAsState()
-    var showQrCode by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .padding(10.dp)
@@ -137,85 +128,65 @@ fun OrderDetails(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        if (showQrCode) {
-            QrCode(delivery!!.deliveryId)
-            ElevatedButton(
+        ElevatedCard {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp),
-                onClick = { showQrCode = false }
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(
-                    "Back to details",
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        } else {
-            ElevatedCard {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    Text("Parcel Details", fontWeight = FontWeight.Bold)
-                    DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
-                    DetailsRow("Status", delivery?.status ?: "Unknown")
+                Text("Parcel Details", fontWeight = FontWeight.Bold)
+                DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                DetailsRow("Status", delivery?.status ?: "Unknown")
 
+
+                if (recipient != null) {
                     HorizontalDivider(thickness = 1.dp)
-
-                    if (recipient != null) {
-                        Text("Recipient Details", fontWeight = FontWeight.Bold)
-                        DetailsRow("Name", recipient!!.fullName)
-                        DetailsRow("Phone Number", recipient!!.phoneNumber)
-                        DetailsRow("Address", recipient!!.address.address)
-                    }
-
-                    HorizontalDivider(thickness = 1.dp)
-
-                    if (sender != null) {
-                        Text("Sender Details", fontWeight = FontWeight.Bold)
-                        DetailsRow("Name", sender!!.fullName)
-                        DetailsRow("Phone Number", sender!!.phoneNumber)
-                        DetailsRow("Address", sender!!.address.address)
-                    }
+                    Text("Recipient Details", fontWeight = FontWeight.Bold)
+                    DetailsRow("Name", recipient!!.fullName)
+                    DetailsRow("Phone Number", recipient!!.phoneNumber)
+                    DetailsRow("Address", recipient!!.address.address)
                 }
 
+                if (sender != null) {
+                    HorizontalDivider(thickness = 1.dp)
+                    Text("Sender Details", fontWeight = FontWeight.Bold)
+                    DetailsRow("Name", sender!!.fullName)
+                    DetailsRow("Phone Number", sender!!.phoneNumber)
+                    DetailsRow("Address", sender!!.address.address)
+                }
             }
-            Column(
-                modifier = Modifier.padding(top = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                DeliveryProgressBar(deliveryViewModel = deliveryViewModel)
-                if (user != null && user!!.role == "customer") {
-                    ElevatedButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 20.dp),
-                        onClick = { showQrCode = true }
+
+        }
+        Column(
+            modifier = Modifier.padding(top = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            DeliveryProgressBar(deliveryViewModel = deliveryViewModel)
+            if (delivery!!.status != "delivered") { //no need to show any of these for past deliveries
+                if (user != null && user!!.role == "customer") { //if customer, display qr codes
+                    QrCode(delivery!!.deliveryId)
+                } else { //if driver, let them edit the progress
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            "View QR Code",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                } else {
-                    ElevatedButton(
-                        onClick = { navController.navigate("qrCodeScanner") }
-                    ) {
-                        Row {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
-                                contentDescription = "Scan QR Code"
-                            )
-                            Text("Enter qr code")
+                        if (delivery!!.completedSteps == delivery!!.steps.size - 1) { //the last step must be completed using the qr code (the rest can be completed by just clicking the button
+                            ElevatedButton(onClick = { navController.navigate("qrCodeScanner") }) {
+                                Row {
+                                    Icon(
+                                        imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
+                                        contentDescription = "Scan QR Code"
+                                    )
+                                    Text("Enter qr code")
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-
     }
 }
 
@@ -238,19 +209,13 @@ private fun QrCode(deliveryId: String) {
 @Composable
 private fun DetailsRow(title: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            "${title}:",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .weight(0.3f)
+            "${title}:", fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.3f)
         )
         Text(
-            value,
-            textAlign = TextAlign.End,
-            modifier = Modifier.weight(0.7f)
+            value, textAlign = TextAlign.End, modifier = Modifier.weight(0.7f)
         )
     }
 }
@@ -277,8 +242,7 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
 //Everyone just draws it pixel by pixel
 private fun generateQrCode(deliveryId: String, size: Int = 200): Bitmap? {
     return try {
-        val bitMatrix =
-            MultiFormatWriter().encode(deliveryId, BarcodeFormat.QR_CODE, size, size)
+        val bitMatrix = MultiFormatWriter().encode(deliveryId, BarcodeFormat.QR_CODE, size, size)
         val width = bitMatrix.width
         val height = bitMatrix.height
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
