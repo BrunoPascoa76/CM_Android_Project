@@ -25,7 +25,7 @@ class DeliveryHistoryViewModel : ViewModel() {
         viewModelScope.launch {
             when (val result = DeliveryRepository().getAllByUserIdAndStatus(
                 userId,
-                listOf("Pending", "Accepted", "In Transit", "IN_TRANSIT")
+                listOf("Pending", "Accepted", "Pickup", "In Transit", "IN_TRANSIT")
             )) {
                 is Result.Success -> {
                     _currentDeliveries.value = result.data

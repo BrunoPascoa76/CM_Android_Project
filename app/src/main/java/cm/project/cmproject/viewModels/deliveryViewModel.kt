@@ -7,10 +7,10 @@ import cm.project.cmproject.models.User
 import cm.project.cmproject.repositories.DeliveryRepository
 import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.repositories.UserRepository
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 class DeliveryViewModel : ViewModel() {
     private val _state = MutableStateFlow<Delivery?>(null)
@@ -52,7 +52,7 @@ class DeliveryViewModel : ViewModel() {
             viewModelScope.launch {
                 when (val result = DeliveryRepository().getAllByUserIdAndStatus(
                     user.uid,
-                    listOf("Pending", "Accepted", "In Transit")
+                    listOf("Pending", "Accepted", "Pickup", "In Transit")
                 )) {
                     is Result.Success -> {
                         _errorMessage.value = null
@@ -81,15 +81,29 @@ class DeliveryViewModel : ViewModel() {
 
     fun completeCurrentStep() {
         if (_state.value != null) {
+            var status = _state.value!!.status
+
             val steps = _state.value!!.steps.toMutableList() //create a copy
             if (steps.isNotEmpty()) {
                 steps[_state.value!!.completedSteps] = steps[_state.value!!.completedSteps].copy(
                     isCompleted = true,
-                    completionDate = LocalDateTime.now()
+                    completionDate = Timestamp.now()
                 )
+
+                //update main status based on current step
+                if (_state.value!!.steps[_state.value!!.completedSteps].description in listOf(
+                        "Driver Assigned",
+                        "Pickup",
+                        "In Transit",
+                        "Delivered"
+                    )
+                ) { // update the "main" status (used for filtering and for users who don't want ALL the details) if completing one of the predefined steps
+                    status = _state.value!!.steps[_state.value!!.completedSteps].description
+                }
             }
             _state.value = _state.value!!.copy(
                 steps = steps,
+                status = status,
                 completedSteps = _state.value!!.completedSteps + 1
             )
             viewModelScope.launch {

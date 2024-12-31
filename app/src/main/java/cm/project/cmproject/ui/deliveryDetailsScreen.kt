@@ -16,6 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
@@ -170,16 +172,40 @@ fun OrderDetails(
                 } else { //if driver, let them edit the progress
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(
+                            10.dp,
+                            Alignment.CenterHorizontally
+                        )
                     ) {
+                        ElevatedButton(
+                            onClick = { navController.navigate("delivery/${delivery!!.deliveryId}/addStep") },
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add Step"
+                                )
+                                Text("Add Step")
+                            }
+                        }
                         if (delivery!!.completedSteps == delivery!!.steps.size - 1) { //the last step must be completed using the qr code (the rest can be completed by just clicking the button
                             ElevatedButton(onClick = { navController.navigate("qrCodeScanner") }) {
-                                Row {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
                                         contentDescription = "Scan QR Code"
                                     )
                                     Text("Enter qr code")
+                                }
+                            }
+                        } else { //the others just need a click of a button
+                            ElevatedButton(onClick = { deliveryViewModel.completeCurrentStep() }) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Done,
+                                        contentDescription = "Complete Step"
+                                    )
+                                    Text("Complete Step")
                                 }
                             }
                         }
