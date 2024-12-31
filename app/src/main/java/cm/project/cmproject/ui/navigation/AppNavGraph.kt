@@ -18,6 +18,7 @@ import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
+import cm.project.cmproject.ui.StepCreationScreen
 import cm.project.cmproject.viewModels.AddressViewModel
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
@@ -106,6 +107,16 @@ fun AppNavHost(
             } else {
                 AuthTabs(navController = navController, viewModel = userViewModel)
             }
+        }
+
+        composable("delivery/{deliveryId}/addStep") { backStackEntry ->
+            val deliveryId = backStackEntry.arguments?.getString("deliveryId")
+            StepCreationScreen(
+                deliveryId = deliveryId!!,
+                navController = navController,
+                deliveryViewModel = deliveryViewModel,
+                userViewModel = userViewModel
+            )
         }
     }
 }
