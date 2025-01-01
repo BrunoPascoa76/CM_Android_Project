@@ -75,7 +75,6 @@ class LocationRepository {
             val request = FindCurrentPlaceRequest.newInstance(
                 listOf(
                     Place.Field.FORMATTED_ADDRESS,
-                    Place.Field.ADDRESS_COMPONENTS,
                     Place.Field.LOCATION,
                     Place.Field.PLUS_CODE
                 )

@@ -1,12 +1,18 @@
 package cm.project.cmproject.viewModels
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cm.project.cmproject.models.Address
 import cm.project.cmproject.models.Delivery
+import cm.project.cmproject.models.Step
 import cm.project.cmproject.models.User
 import cm.project.cmproject.repositories.DeliveryRepository
+import cm.project.cmproject.repositories.LocationRepository
 import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.repositories.UserRepository
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -108,6 +114,47 @@ class DeliveryViewModel : ViewModel() {
             )
             viewModelScope.launch {
                 DeliveryRepository().updateDelivery(_state.value!!)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalPermissionsApi::class)
+    fun createStep(
+        description: String,
+        isCompleted: Boolean,
+        context: Context,
+        permissionState: PermissionState
+    ) {
+        if (_state.value != null) {
+            val steps = _state.value!!.steps.toMutableList() //create a copy
+
+            var location = Address()
+
+            //to simplify the job for both programmer and driver, I just use the current location, as they are usually created when they are completed
+            viewModelScope.launch {
+                when (val result =
+                    LocationRepository().getCurrentLocation(context, permissionState)) {
+                    is Result.Success -> {
+                        location = result.data
+                    }
+
+                    is Result.Error -> {} //errors are most likely due to the permission not being granted, so let's deal with it gracefully by just using an empty address
+                }
+
+                val step = Step(location = location, description = description)
+
+                //if empty it's the first step, else it's between the last one that was completed and the next one
+                if (steps.isEmpty()) {
+                    steps.add(step)
+                } else {
+                    steps.add(_state.value!!.completedSteps, step)
+                }
+                _state.value = _state.value!!.copy(steps = steps)
+
+
+                if (isCompleted) {
+                    completeCurrentStep()
+                }
             }
         }
     }

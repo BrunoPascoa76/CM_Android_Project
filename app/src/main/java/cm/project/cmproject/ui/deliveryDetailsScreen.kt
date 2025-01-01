@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -177,17 +178,21 @@ fun OrderDetails(
                             Alignment.CenterHorizontally
                         )
                     ) {
-                        ElevatedButton(
-                            onClick = { navController.navigate("delivery/${delivery!!.deliveryId}/addStep") },
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Add Step"
-                                )
-                                Text("Add Step")
+                        if (delivery!!.status != "Delivered" && user!!.role == "driver") {
+                            ElevatedButton(
+                                onClick = { navController.navigate("delivery/${delivery!!.deliveryId}/addStep") },
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add Step"
+                                    )
+                                    Text("Add Step")
+                                }
                             }
                         }
+
+
                         if (delivery!!.completedSteps == delivery!!.steps.size - 1) { //the last step must be completed using the qr code (the rest can be completed by just clicking the button
                             ElevatedButton(onClick = { navController.navigate("qrCodeScanner") }) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -195,6 +200,7 @@ fun OrderDetails(
                                         imageVector = ImageVector.vectorResource(id = R.drawable.qr_code_scanner_24px),
                                         contentDescription = "Scan QR Code"
                                     )
+                                    Spacer(modifier = Modifier.width(5.dp))
                                     Text("Enter qr code")
                                 }
                             }
@@ -205,6 +211,7 @@ fun OrderDetails(
                                         imageVector = Icons.Default.Done,
                                         contentDescription = "Complete Step"
                                     )
+                                    Spacer(modifier = Modifier.width(5.dp))
                                     Text("Complete Step")
                                 }
                             }

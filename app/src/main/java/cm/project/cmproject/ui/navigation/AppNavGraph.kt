@@ -110,12 +110,9 @@ fun AppNavHost(
         }
 
         composable("delivery/{deliveryId}/addStep") { backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getString("deliveryId")
             StepCreationScreen(
-                deliveryId = deliveryId!!,
-                navController = navController,
                 deliveryViewModel = deliveryViewModel,
-                userViewModel = userViewModel
+                navController = navController
             )
         }
     }

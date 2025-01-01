@@ -26,17 +26,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
-import cm.project.cmproject.viewModels.AddressViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.repositories.LocationRepository
+import cm.project.cmproject.repositories.Result
+import cm.project.cmproject.viewModels.AddressViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import cm.project.cmproject.repositories.Result
 import com.google.android.libraries.places.api.Places
-import kotlinx.coroutines.launch
 import com.google.android.libraries.places.api.model.AutocompletePrediction
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -48,7 +48,7 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
         rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
     val coroutineScope = rememberCoroutineScope()
 
-    if(!Places.isInitialized()){
+    if (!Places.isInitialized()) {
         getAPIKey(context)?.let { Places.initialize(context, it) }
     }
 
@@ -78,6 +78,7 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
                                         is Result.Success -> {
                                             suggestions.addAll(result.data)
                                         }
+
                                         is Result.Error -> {}
                                     }
                                 }
@@ -95,26 +96,35 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
                 if (suggestions.isNotEmpty()) {
                     Column {
                         for (suggestion in suggestions) {
-                            ElevatedCard(modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    coroutineScope.launch {
-                                        when(val result=LocationRepository().getAddress(context,suggestion.placeId)){
-                                            is Result.Success->{
-                                                addressViewModel.setAddress(result.data)
-                                                addressInput=result.data.address
-                                                suggestions.clear()
-                                            }
-                                            is Result.Error->{
-                                                suggestions.clear()
+                            ElevatedCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            when (val result = LocationRepository().getAddress(
+                                                context,
+                                                suggestion.placeId
+                                            )) {
+                                                is Result.Success -> {
+                                                    addressViewModel.setAddress(result.data)
+                                                    addressInput = result.data.address
+                                                    suggestions.clear()
+                                                }
+
+                                                is Result.Error -> {
+                                                    suggestions.clear()
+                                                }
                                             }
                                         }
-                                    }
-                                },
-                                shape=RectangleShape
+                                    },
+                                shape = RectangleShape
                             ) {
                                 Text(text = suggestion.getPrimaryText(null).toString())
-                                Text(text=suggestion.getSecondaryText(null).toString(), fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
+                                Text(
+                                    text = suggestion.getSecondaryText(null).toString(),
+                                    fontSize = 12.sp,
+                                    color = colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -133,7 +143,7 @@ fun AddressInput(modifier: Modifier = Modifier, addressViewModel: AddressViewMod
     }
 }
 
-private fun getAPIKey(context: Context): String? {
+fun getAPIKey(context: Context): String? {
     val applicationInfo = context.packageManager.getApplicationInfo(
         context.packageName,
         PackageManager.GET_META_DATA
