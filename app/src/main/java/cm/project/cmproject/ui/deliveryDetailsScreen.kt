@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,9 +57,10 @@ import com.google.zxing.WriterException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview(showBackground = true)
 fun DeliveryDetailsScreen(
     modifier: Modifier = Modifier,
-    deliveryId: String?,
+    deliveryId: String = "123",
     navController: NavController = rememberNavController(),
     deliveryViewModel: DeliveryViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
@@ -92,7 +94,8 @@ fun DeliveryDetailsScreen(
             ErrorMessage(deliveryViewModel)
             if (delivery == null) {
                 Box(
-                    modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.width(64.dp),
@@ -140,7 +143,7 @@ fun OrderDetails(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text("Parcel Details", fontWeight = FontWeight.Bold)
-                DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                DetailsRow("Title", delivery?.parcel?.label ?: "N/A")
                 DetailsRow("Status", delivery?.status ?: "Unknown")
 
 

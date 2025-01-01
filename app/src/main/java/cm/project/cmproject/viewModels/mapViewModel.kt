@@ -5,16 +5,13 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cm.project.cmproject.models.DeliveryStatus
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,38 +19,37 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
+
 class MapViewModel : ViewModel() {
-    private val _userLocation = MutableStateFlow<LatLng?>(null)
-    val userLocation: StateFlow<LatLng?> = _userLocation
 
-    private val _selectedLocation = MutableStateFlow<LatLng?>(null)
-    val selectedLocation: StateFlow<LatLng?> = _selectedLocation
+    // State to hold the user's location as LatLng (latitude and longitude)
+    private val _userLocation = mutableStateOf<LatLng?>(null)
+    val userLocation: State<LatLng?> = _userLocation
 
-    fun selectLocation(location: LatLng) {
-        _selectedLocation.value = location
+    // State to hold the selected place location as LatLng
+    private val _selectedLocation = mutableStateOf<LatLng?>(null)
+    val selectedLocation: State<LatLng?> = _selectedLocation
+
+    // State to hold the address of the selected location
+    private val _searchedText = mutableStateOf("")
+    val searchedText: State<String> = _searchedText
+
+    private val _markers = mutableStateOf<List<MarkerData>>(emptyList())
+    val markers: State<List<MarkerData>> = _markers
+
+    lateinit var geoCoder: Geocoder
+
+    // Define a MarkerData class to hold the position and title of a marker
+    data class MarkerData(val position: LatLng, val title: String)
+
+    fun addMarker(markerData: MarkerData) {
+        _markers.value = _markers.value + markerData
     }
 
-    fun listenForDeliveryStatusUpdates(deliveryId: String) {
-        val database =
-            FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
-        val deliveryStatusRef = database.getReference("deliveryStatus").child(deliveryId)
+    private val _selectedLocationAddress = MutableStateFlow("")
+    val selectedLocationAddress: StateFlow<String> = _selectedLocationAddress
 
-        deliveryStatusRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
-                deliveryStatus?.let {
-                    if (it.status == "IN_TRANSIT") {
-                        _userLocation.value = LatLng(it.latitude, it.longitude)
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle possible errors.
-            }
-        })
-    }
-
+    // Function to fetch the user's location and update the state
     fun fetchUserLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
         // Check if the location permission is granted
         if (ContextCompat.checkSelfPermission(
@@ -77,6 +73,26 @@ class MapViewModel : ViewModel() {
             Timber.e("Location permission is not granted.")
         }
     }
+
+    // Function to geocode the selected place and update the selected location state
+    /*
+        fun selectLocation(selectedPlace: String, context: Context) {
+            viewModelScope.launch {
+                val geocoder = Geocoder(context)
+                val addresses = withContext(Dispatchers.IO) {
+                    // Perform geocoding on a background thread
+                    geocoder.getFromLocationName(selectedPlace, 1)
+                }
+                if (!addresses.isNullOrEmpty()) {
+                    // Update the selected location in the state
+                    val address = addresses[0]
+                    val latLng = LatLng(address.latitude, address.longitude)
+                    _selectedLocation.value = latLng
+                } else {
+                    Timber.tag("MapScreen").e("No location found for the selected place.")
+                }
+            }
+        }*/
 
     fun selectLocation(selectedPlace: String, context: Context) {
         viewModelScope.launch {
@@ -114,6 +130,20 @@ class MapViewModel : ViewModel() {
                         Timber.tag("MapScreen").e("Error using geocoder: ${e.message}")
                     }
                 }
+            }
+        }
+    }
+
+    fun getAddress(latLng: LatLng) {
+        viewModelScope.launch {
+            try {
+                val addresses = withContext(Dispatchers.IO) {
+                    geoCoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+                }
+                _searchedText.value =
+                    addresses?.firstOrNull()?.getAddressLine(0) ?: "Address not found"
+            } catch (e: Exception) {
+                Timber.e("Error fetching address: ${e.localizedMessage}")
             }
         }
     }

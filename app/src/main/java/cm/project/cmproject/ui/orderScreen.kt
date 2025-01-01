@@ -100,7 +100,7 @@ fun OrderScreen(
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
-                
+
                 HorizontalPager(
                     modifier = Modifier.weight(0.9f),
                     state = pagerState,
@@ -199,7 +199,7 @@ private fun orderPage(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        currentDelivery?.parcel?.description?.let {
+        currentDelivery?.parcel?.label?.let {
             Text(
                 text = it,
                 style = MaterialTheme.typography.titleMedium

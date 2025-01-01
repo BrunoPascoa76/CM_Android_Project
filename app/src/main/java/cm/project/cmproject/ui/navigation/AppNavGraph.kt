@@ -9,11 +9,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.LobbyScreen
+import cm.project.cmproject.ui.MapScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
@@ -22,6 +24,7 @@ import cm.project.cmproject.ui.StepCreationScreen
 import cm.project.cmproject.viewModels.AddressViewModel
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
+import cm.project.cmproject.viewModels.MapViewModel
 import cm.project.cmproject.viewModels.PendingDeliveriesViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
@@ -39,6 +42,7 @@ fun AppNavHost(
     val userViewModel: UserViewModel = viewModel()
     val orderViewModel: OrderViewModel = viewModel()
     val deliveryViewModel: DeliveryViewModel = viewModel()
+    val mapViewModel: MapViewModel = viewModel()
     val addressViewModel: AddressViewModel = viewModel()
     val deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
     val pendingDeliveriesViewModel: PendingDeliveriesViewModel = viewModel()
@@ -83,12 +87,14 @@ fun AppNavHost(
         }
         composable("deliveryDetails/{deliveryId}") { backStackEntry ->
             val deliveryId = backStackEntry.arguments?.getString("deliveryId")
-            DeliveryDetailsScreen(
-                deliveryId = deliveryId,
-                navController = navController,
-                deliveryViewModel = deliveryViewModel,
-                userViewModel = userViewModel
-            )
+            if (deliveryId != null) {
+                DeliveryDetailsScreen(
+                    deliveryId = deliveryId,
+                    navController = navController,
+                    deliveryViewModel = deliveryViewModel,
+                    userViewModel = userViewModel
+                )
+            }
         }
         composable("qrCodeScanner") {
             QrCodeScannerScreen(navController = navController, viewModel = deliveryViewModel)
@@ -115,5 +121,29 @@ fun AppNavHost(
                 navController = navController
             )
         }
+        composable("mapScreen") {
+            MapScreen(
+                navController = navController,
+                mapViewModel = mapViewModel,
+                deliveryViewModel = TODO(),
+                addressType = TODO()
+            )
+        }
+        composable(
+            route = "mapScreen?addressType={addressType}",
+            arguments = listOf(navArgument("addressType") { defaultValue = "fromAddress" })
+        ) { backStackEntry ->
+            val addressType = backStackEntry.arguments?.getString("addressType") ?: "fromAddress"
+            MapScreen(mapViewModel, deliveryViewModel, navController, addressType)
+        }
+        /*
+        composable("createNewOrder") {
+            Navbar(navController) {
+                NewOrderScreen(
+                    navController = navController,
+                    deliveryViewModel = deliveryViewModel
+                )
+            }
+        }*/
     }
 }

@@ -1,5 +1,6 @@
 package cm.project.cmproject.viewModels
 
+import android.accounts.NetworkErrorException
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,8 +18,12 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class DeliveryViewModel : ViewModel() {
+    private val _accepted = MutableStateFlow<Boolean>(false)
+    val accepted = _accepted.asStateFlow()
+
     private val _state = MutableStateFlow<Delivery?>(null)
     val state = _state.asStateFlow()
 
@@ -33,6 +38,12 @@ class DeliveryViewModel : ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
+
+    private val _fromAddress = MutableStateFlow("")
+    val fromAddress = _fromAddress.asStateFlow()
+
+    private val _toAddress = MutableStateFlow("")
+    val toAddress = _toAddress.asStateFlow()
 
     fun fetchDelivery(deliveryId: String) {
         _errorMessage.value = null
@@ -52,13 +63,12 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
-
     fun fetchCurrentDelivery(user: User?) {
         if (user != null) {
             viewModelScope.launch {
                 when (val result = DeliveryRepository().getAllByUserIdAndStatus(
                     user.uid,
-                    listOf("Pending", "Accepted", "Pickup", "In Transit")
+                    listOf("Pending", "Accepted", "In Transit")
                 )) {
                     is Result.Success -> {
                         _errorMessage.value = null
@@ -205,5 +215,77 @@ class DeliveryViewModel : ViewModel() {
                 _driver.value = null
             }
         }
+    }
+
+    fun createDelivery(
+        parcelId: String,
+        deliveryId: String,
+        userId: String,
+        fromAddress: String,
+        toAddress: String,
+        email: String,
+        phoneNumber: String,
+        label: String,
+        isFragile: Boolean,
+        weight: String,
+        length: String,
+        width: String,
+        height: String
+    ) {
+        viewModelScope.launch {
+            val newDelivery = Delivery(
+                parcelId = parcelId,
+                deliveryId = deliveryId,
+                recipientId = userId,
+                senderId = userId,
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                status = "Pending",
+                completedSteps = 0,
+                email = email,
+                phoneNumber = phoneNumber,
+                label = label,
+                isFragile = isFragile,
+                weight = weight,
+                length = length,
+                width = width,
+                height = height
+            )
+            when (val deliveryResult = DeliveryRepository().insertDelivery(newDelivery)) {
+                is Result.Success -> {
+                    _accepted.value = deliveryResult.data
+                    _errorMessage.value = null
+                }
+
+                is Result.Error -> {
+                    when (deliveryResult.exception) {
+                        is NetworkErrorException -> {
+                            // Handle network error, e.g., show retry option
+                            _errorMessage.value =
+                                "Network error: ${deliveryResult.exception.message}"
+                        }
+
+                        is com.google.firebase.database.DatabaseException -> {
+                            // Handle database error, e.g., log the error and show a generic message
+                            Timber.tag("DeliveryViewModel")
+                                .e(deliveryResult.exception, "Database error")
+                            _errorMessage.value = "Failed to save delivery."
+                        }
+
+                        else -> {
+                            _errorMessage.value = deliveryResult.exception.message
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateFromAddress(newAddress: String) {
+        _fromAddress.value = newAddress
+    }
+
+    fun updateToAddress(newAddress: String) {
+        _toAddress.value = newAddress
     }
 }

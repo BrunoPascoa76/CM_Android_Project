@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                         val deliveryRepository = DeliveryRepository()
                         lifecycleScope.launch {
                             val deliveries =
-                                deliveryRepository.getDeliveriesByDriverId(user.uid) as List<Delivery>
+                                deliveryRepository.getDeliveryById(user.uid) as List<Delivery>
                             deliveries.forEach { delivery ->
                                 scheduleLocationUpdates(delivery.deliveryId, this@MainActivity)
                             }

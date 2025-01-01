@@ -162,7 +162,7 @@ fun CurrentDeliveriesSection(
 //                                    contentDescription = "unknown"
 //                                )
 //                            }
-                            Text(text = delivery.parcel.description)
+                            Text(text = delivery.parcel.label)
                         }
                     }
                 }
@@ -204,7 +204,7 @@ fun PastDeliveriesSection(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    delivery.parcel.description,
+                                    delivery.parcel.label,
                                     modifier = Modifier.padding(10.dp)
                                 )
                                 if (delivery.steps.isNotEmpty()) {

@@ -33,7 +33,9 @@ fun SearchBar(
 
                 // Set the text color and hint text color based on the current theme
                 setTextColor(textColor.toArgb())
-                setHintTextColor(textColor.copy(alpha = 0.6f).toArgb()) // Set hint text color with some transparency
+                setHintTextColor(
+                    textColor.copy(alpha = 0.6f).toArgb()
+                ) // Set hint text color with some transparency
 
                 // Set the layout params to ensure the view takes up the full width
                 layoutParams = ViewGroup.LayoutParams(
@@ -42,7 +44,8 @@ fun SearchBar(
                 )
 
                 // Initialize the Places API and the Autocomplete Adapter
-                val autocompleteAdapter = ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line)
+                val autocompleteAdapter =
+                    ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line)
                 val placesClient = Places.createClient(context)
                 val autocompleteSessionToken = AutocompleteSessionToken.newInstance()
 
@@ -57,14 +60,15 @@ fun SearchBar(
                             .build()
 
                         // Fetch autocomplete predictions from the Places API
-                        placesClient.findAutocompletePredictions(request).addOnSuccessListener { response ->
-                            autocompleteAdapter.clear() // Clear the previous suggestions
-                            response.autocompletePredictions.forEach { prediction ->
-                                // Add each prediction to the adapter for displaying in the dropdown
-                                autocompleteAdapter.add(prediction.getFullText(null).toString())
+                        placesClient.findAutocompletePredictions(request)
+                            .addOnSuccessListener { response ->
+                                autocompleteAdapter.clear() // Clear the previous suggestions
+                                response.autocompletePredictions.forEach { prediction ->
+                                    // Add each prediction to the adapter for displaying in the dropdown
+                                    autocompleteAdapter.add(prediction.getFullText(null).toString())
+                                }
+                                autocompleteAdapter.notifyDataSetChanged() // Notify the adapter to update the dropdown
                             }
-                            autocompleteAdapter.notifyDataSetChanged() // Notify the adapter to update the dropdown
-                        }
                     }
                 }
 
@@ -73,7 +77,8 @@ fun SearchBar(
 
                 // Set an item click listener to handle when the user selects a suggestion
                 setOnItemClickListener { _, _, position, _ ->
-                    val selectedPlace = autocompleteAdapter.getItem(position) ?: return@setOnItemClickListener
+                    val selectedPlace =
+                        autocompleteAdapter.getItem(position) ?: return@setOnItemClickListener
 
                     // Call the callback function to handle the selected place
                     onPlaceSelected(selectedPlace)
