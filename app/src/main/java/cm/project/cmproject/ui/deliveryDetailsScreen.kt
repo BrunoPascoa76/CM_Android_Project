@@ -143,7 +143,7 @@ fun OrderDetails(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text("Parcel Details", fontWeight = FontWeight.Bold)
-                DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                DetailsRow("Title", delivery?.parcel?.label ?: "N/A")
                 DetailsRow("Status", delivery?.status ?: "Unknown")
 
 
