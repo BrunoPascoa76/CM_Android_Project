@@ -1,6 +1,6 @@
 [versions]
 accompanistPermissionsVersion = "<latest_version>)"
-agp = "8.7.3"
+agp = "8.6.1"
 barcodeScanning = "17.3.0"
 cameraCore = "1.4.0"
 cameraView = "1.4.0"
@@ -25,6 +25,7 @@ navigationDynamicFeaturesFragment = "2.8.4"
 navigationFragment = "2.8.4"
 navigationTesting = "2.8.4"
 navigationUi = "2.8.4"
+protobufJava = "3.22.3"
 placesVersion = "3.5.0"
 vectordrawable = "1.2.0"
 googleMaps = "19.0.0" # Google Maps SDK

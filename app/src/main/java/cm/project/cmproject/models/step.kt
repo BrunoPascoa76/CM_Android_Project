@@ -1,12 +1,10 @@
 package cm.project.cmproject.models
 
-import android.location.Address
-import com.google.type.DateTime
-import java.util.Locale
+import com.google.firebase.Timestamp
 
 data class Step(
-    val location: Address=Address(Locale.getDefault()),
-    val description:String="",
-    val isCompleted:Boolean=false,
-    val completionDate: DateTime?=null
+    val location: Address = Address(),
+    val description: String = "",
+    val isCompleted: Boolean = false,
+    val completionDate: Timestamp? = null
 )
