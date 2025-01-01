@@ -47,10 +47,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.viewModels.DeliveryViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.R
 import cm.project.cmproject.components.DeliveryProgressBar
+import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
@@ -100,7 +99,7 @@ fun DeliveryDetailsScreen(
             ErrorMessage(deliveryViewModel)
             if (delivery == null) {
                 Box(
-                    modifier=Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
@@ -163,7 +162,7 @@ fun OrderDetails(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text("Parcel Details", fontWeight = FontWeight.Bold)
-                    DetailsRow("Title", delivery?.parcel?.description ?: "N/A")
+                    DetailsRow("Title", delivery?.parcel?.label ?: "N/A")
                     DetailsRow("Status", delivery?.status ?: "Unknown")
 
                     HorizontalDivider(thickness = 1.dp)
@@ -278,7 +277,7 @@ fun ErrorMessage(viewModel: DeliveryViewModel) {
 }
 
 //Everyone just draws it pixel by pixel
-private fun generateQrCode(deliveryId: Int, size: Int = 200): Bitmap? {
+private fun generateQrCode(deliveryId: String, size: Int = 200): Bitmap? {
     return try {
         val bitMatrix =
             MultiFormatWriter().encode(deliveryId.toString(), BarcodeFormat.QR_CODE, size, size)

@@ -1,6 +1,5 @@
 package cm.project.cmproject.ui.navigation
 
-import OrderViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -15,10 +14,9 @@ import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
-import cm.project.cmproject.ui.MapScreen
 import cm.project.cmproject.ui.LobbyScreen
+import cm.project.cmproject.ui.MapScreen
 import cm.project.cmproject.ui.Navbar
-import cm.project.cmproject.ui.NewOrderScreen
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
@@ -88,15 +86,17 @@ fun AppNavHost(
         }
         composable("deliveryDetails/{deliveryId}") { backStackEntry ->
             val deliveryId = backStackEntry.arguments?.getString("deliveryId")
-            DeliveryDetailsScreen(
-                deliveryId = deliveryId,
-                navController = navController,
-                deliveryViewModel = deliveryViewModel,
-                userViewModel = userViewModel
-            )
+            if (deliveryId != null) {
+                DeliveryDetailsScreen(
+                    deliveryId = deliveryId,
+                    navController = navController,
+                    deliveryViewModel = deliveryViewModel,
+                    userViewModel = userViewModel
+                )
+            }
         }
-        composable("qrCodeScanner"){
-            QrCodeScannerScreen(navController=navController, viewModel = deliveryViewModel)
+        composable("qrCodeScanner") {
+            QrCodeScannerScreen(navController = navController, viewModel = deliveryViewModel)
         }
 
         composable("lobby") {
@@ -128,6 +128,7 @@ fun AppNavHost(
             val addressType = backStackEntry.arguments?.getString("addressType") ?: "fromAddress"
             MapScreen(mapViewModel, deliveryViewModel, navController, addressType)
         }
+        /*
         composable("createNewOrder") {
             Navbar(navController) {
                 NewOrderScreen(
@@ -135,6 +136,6 @@ fun AppNavHost(
                     deliveryViewModel = deliveryViewModel
                 )
             }
-        }
+        }*/
     }
 }
