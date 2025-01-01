@@ -11,17 +11,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.MapScreen
+import cm.project.cmproject.ui.LobbyScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.NewOrderScreen
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
+import cm.project.cmproject.viewModels.AddressViewModel
+import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.MapViewModel
+import cm.project.cmproject.viewModels.PendingDeliveriesViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
 
@@ -39,6 +44,9 @@ fun AppNavHost(
     val orderViewModel: OrderViewModel = viewModel()
     val deliveryViewModel: DeliveryViewModel = viewModel()
     val mapViewModel: MapViewModel = viewModel()
+    val addressViewModel: AddressViewModel = viewModel()
+    val deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
+    val pendingDeliveriesViewModel: PendingDeliveriesViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -49,28 +57,37 @@ fun AppNavHost(
             AuthTabs(navController = navController, viewModel = userViewModel)
         }
         composable("home") {
-            Navbar(navController) {
-                HomeScreen(viewModel = userViewModel)
+            Navbar(navController, userViewModel) {
+                HomeScreen(
+                    navController = navController,
+                    userViewModel = userViewModel,
+                    deliveryHistoryViewModel = deliveryHistoryViewModel
+                )
             }
         }
         composable("profile") {
-            Navbar(navController) {
-                ProfileScreen(viewModel = userViewModel, navController = navController)
+            Navbar(navController, userViewModel) {
+                ProfileScreen(
+                    userViewModel = userViewModel,
+                    addressViewModel = addressViewModel,
+                    navController = navController
+                )
             }
         }
         composable("order") {
             val user by userViewModel.state.collectAsState()
-            Navbar(navController) {
-                deliveryViewModel.fetchCurrentDelivery(user)
+            if (user == null) navController.navigate("auth")
+            Navbar(navController, userViewModel) {
+                deliveryHistoryViewModel.loadCurrentDeliveries(user!!.uid)
                 OrderScreen(
                     mockViewModel = orderViewModel,
-                    deliveryViewModel = deliveryViewModel,
+                    deliveryHistoryViewModel = deliveryHistoryViewModel,
                     navController = navController
                 )
             }
         }
         composable("deliveryDetails/{deliveryId}") { backStackEntry ->
-            val deliveryId = backStackEntry.arguments?.getString("deliveryId") ?: ""
+            val deliveryId = backStackEntry.arguments?.getString("deliveryId")
             DeliveryDetailsScreen(
                 deliveryId = deliveryId,
                 navController = navController,
@@ -78,8 +95,23 @@ fun AppNavHost(
                 userViewModel = userViewModel
             )
         }
-        composable("qrCodeScanner") {
-            QrCodeScannerScreen(navController = navController, viewModel = deliveryViewModel)
+        composable("qrCodeScanner"){
+            QrCodeScannerScreen(navController=navController, viewModel = deliveryViewModel)
+        }
+
+        composable("lobby") {
+            val user by userViewModel.state.collectAsState()
+            if (user != null && user!!.role == "driver") {
+                Navbar(navController, userViewModel) {
+                    LobbyScreen(
+                        navController = navController,
+                        userViewModel = userViewModel,
+                        pendingDeliveriesViewModel = pendingDeliveriesViewModel
+                    )
+                }
+            } else {
+                AuthTabs(navController = navController, viewModel = userViewModel)
+            }
         }
         composable("mapScreen") {
             MapScreen(

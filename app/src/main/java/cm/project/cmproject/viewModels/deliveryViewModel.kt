@@ -46,7 +46,6 @@ class DeliveryViewModel : ViewModel() {
                     _state.value = result.data
                     _errorMessage.value = null
                 }
-
                 is Result.Error -> {
                     _state.value = null
                     _errorMessage.value = result.exception.message
@@ -56,12 +55,12 @@ class DeliveryViewModel : ViewModel() {
         getRelatedUsers()
     }
 
-    fun fetchCurrentDelivery(user: User?) {
-        if (user != null) {
+    fun fetchCurrentDelivery(user:User?){
+        if(user!=null){
             viewModelScope.launch {
                 when (val result = DeliveryRepository().getAllByUserIdAndStatus(
                     user.uid,
-                    listOf("Pending", "Accepted", "In Transit")
+                    listOf("Pending","Accepted","In Transit")
                 )) {
                     is Result.Success -> {
                         _errorMessage.value = null
@@ -72,9 +71,8 @@ class DeliveryViewModel : ViewModel() {
                             _state.value = result.data[0]
                         }
                     }
-
                     is Result.Error -> {
-                        _state.value = null
+                        _state.value=null
                         _errorMessage.value = result.exception.message
                     }
                 }
@@ -88,9 +86,9 @@ class DeliveryViewModel : ViewModel() {
         }
     }
 
-    fun incrementDeliveryStatus() {
-        if (_state.value != null) {
-            _state.value = _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
+    fun incrementDeliveryStatus(){
+        if(_state.value!=null) {
+            _state.value= _state.value!!.copy(completedSteps = _state.value!!.completedSteps + 1)
             viewModelScope.launch {
                 DeliveryRepository().updateDelivery(_state.value!!)
             }

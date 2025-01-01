@@ -22,9 +22,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,59 +35,57 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import cm.project.cmproject.viewModels.UserViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
+import cm.project.cmproject.components.AddressInput
+import cm.project.cmproject.viewModels.AddressViewModel
+import cm.project.cmproject.viewModels.UserViewModel
 
 @Composable
 @Preview(showBackground = true)
-fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = viewModel(), navController: NavHostController = rememberNavController()) {
-    val user by viewModel.state.collectAsStateWithLifecycle()
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    userViewModel: UserViewModel = viewModel(),
+    addressViewModel: AddressViewModel = viewModel(),
+    navController: NavHostController = rememberNavController()
+) {
+    val user by userViewModel.state.collectAsStateWithLifecycle()
+    val address by addressViewModel.state.collectAsState()
+
+    if (address == null && user?.address != null) {
+        addressViewModel.setAddress(user?.address)
+    }
+
 
     var email: String by remember { mutableStateOf(user?.email ?: "") }
     var fullName: String by remember { mutableStateOf(user?.fullName ?: "") }
     var phoneNumber: String by remember { mutableStateOf(user?.phoneNumber ?: "") }
-    var address: String by remember { mutableStateOf(user?.address ?: "") }
     var license: String by remember { mutableStateOf(user?.license ?: "") }
     var vehicleType: String by remember { mutableStateOf(user?.vehicleType ?: "") }
 
-    val validFieldsUniversal = remember { mutableStateListOf(true,true,true,true) }
-    val validFieldsDriver = remember { mutableStateListOf(true,true) }
+    val validFieldsUniversal = remember { mutableStateListOf(true, true, true, true) }
+    val validFieldsDriver = remember { mutableStateListOf(true, true) }
 
     var isEditing by remember { mutableStateOf(false) }
 
+    validFieldsUniversal[3] = address != null
+
     Column(
-        modifier = modifier.padding(horizontal = 10.dp).verticalScroll(rememberScrollState()),
+        modifier = modifier
+            .padding(top = 30.dp, start = 10.dp, end = 10.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            ElevatedButton(
-                onClick = { isEditing = !isEditing },
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = if (isEditing) Color.Red else Color.Green
-                )
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (!isEditing) {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
-                        Text("Edit")
-                    } else {
-                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Cancel")
-                        Text("Cancel")
-                    }
-                }
-            }
-        }
-
         Text(text = if (isEditing) "Edit profile" else "Profile details", fontSize = 20.sp)
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -114,7 +114,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     DetailsRow(
                         label = "Address:",
                         icon = Icons.Default.Place,
-                        value = user?.address ?: "N/A"
+                        value = user?.address?.address ?: "N/A"
                     )
                     if (user?.role == "driver") {
                         DetailsRow(
@@ -163,6 +163,7 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                     Spacer(modifier = Modifier.height(10.dp))
 
                     OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(0.8f),
                         singleLine = true,
                         label = { Text("Phone Number") },
                         value = phoneNumber,
@@ -178,12 +179,9 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    OutlinedTextField(
-                        label = { Text("Address") },
-                        value = address,
-                        onValueChange = {
-                            address = it; validFieldsUniversal[3] = address.isNotEmpty()
-                        }
+                    AddressInput(
+                        addressViewModel = addressViewModel,
+                        modifier = Modifier.fillMaxWidth(0.8f)
                     )
                     InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter your address")
 
@@ -213,14 +211,18 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
 
                         Spacer(modifier = Modifier.height(10.dp))
                         ElevatedButton(
+                            colors = ButtonDefaults.elevatedButtonColors().copy(
+                                containerColor = colorScheme.primary,
+                                contentColor = colorScheme.onPrimary
+                            ),
                             enabled = validFieldsUniversal.all { it } && validFieldsDriver.all { it },
                             onClick = {
-                                viewModel.update(
+                                userViewModel.update(
                                     user!!.copy(
                                         email = email,
                                         fullName = fullName,
                                         phoneNumber = phoneNumber,
-                                        address = address,
+                                        address = address!!,
                                         license = license,
                                         vehicleType = vehicleType
                                     )
@@ -232,21 +234,57 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
                         }
                     } else {
                         ElevatedButton(
+                            modifier = Modifier.padding(top = 10.dp),
                             enabled = validFieldsUniversal.all { it },
                             onClick = {
-                                viewModel.update(
+                                userViewModel.update(
                                     user!!.copy(
                                         email = email,
                                         fullName = fullName,
                                         phoneNumber = phoneNumber,
-                                        address = address
+                                        address = address!!
                                     )
                                 )
                                 isEditing = false
                             }
                         ) {
-                            Text("Update")
+                            Text("Save")
                         }
+                    }
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp, bottom = 10.dp)
+        ) {
+            ElevatedButton(
+                onClick = { isEditing = !isEditing },
+                colors = ButtonDefaults.elevatedButtonColors(
+                    contentColor = Color.White,
+                    containerColor = if (isEditing) Color(0xFFD32F2F) else Color(0xFF388E3C)
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                ) {
+                    if (!isEditing) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
+                        Text("Edit")
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Cancel",
+                            modifier = Modifier.padding(end = 5.dp)
+                        )
+                        Text("Cancel")
                     }
                 }
             }
@@ -255,10 +293,15 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
         ElevatedButton(
             enabled = validFieldsUniversal.all { it } && validFieldsDriver.all { it },
             onClick = {
-                viewModel.logout()
+                userViewModel.logout()
                 navController.navigate("auth")
             }
         ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.logout_24px),
+                modifier = Modifier.padding(end = 7.dp),
+                contentDescription = "Logout"
+            )
             Text("Logout")
         }
     }
@@ -268,7 +311,9 @@ fun ProfileScreen(modifier: Modifier = Modifier, viewModel: UserViewModel = view
 @Composable
 fun DetailsRow(modifier: Modifier = Modifier, label: String, icon: ImageVector, value: String) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -280,7 +325,13 @@ fun DetailsRow(modifier: Modifier = Modifier, label: String, icon: ImageVector, 
             )
             Text(label)
         }
-        Text(value)
+        Text(
+            text = value,
+            textAlign = TextAlign.End,
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .padding(start = 5.dp)
+        )
     }
 }
 

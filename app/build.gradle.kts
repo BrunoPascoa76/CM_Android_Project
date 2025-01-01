@@ -123,4 +123,14 @@ dependencies {
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation(libs.kotlinx.serialization.json)
 
+    implementation(libs.firebase.database.ktx)
+
+    // Kotlin + coroutines
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // optional - RxJava2 support
+    implementation(libs.androidx.work.rxjava2)
+
+    // optional - GCMNetworkManager support
+    implementation(libs.androidx.work.gcm)
 }
