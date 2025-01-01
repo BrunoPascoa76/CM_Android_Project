@@ -180,7 +180,7 @@ fun OrderDetails(
                     ) {
                         if (delivery!!.status != "Delivered" && user!!.role == "driver") {
                             ElevatedButton(
-                                onClick = { navController.navigate("delivery/${delivery!!.deliveryId}/addStep") },
+                                onClick = { navController.navigate("addDeliveryStep") },
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(

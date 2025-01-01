@@ -109,7 +109,7 @@ fun AppNavHost(
             }
         }
 
-        composable("delivery/{deliveryId}/addStep") { backStackEntry ->
+        composable("addDeliveryStep") {
             StepCreationScreen(
                 deliveryViewModel = deliveryViewModel,
                 navController = navController
