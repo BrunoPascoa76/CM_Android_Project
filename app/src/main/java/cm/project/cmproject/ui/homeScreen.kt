@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import cm.project.cmproject.models.User
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
@@ -53,7 +54,8 @@ fun HomeScreen(
         Spacer(modifier = Modifier.size(70.dp))
         Text(text = "Hello, ${user?.fullName}", fontSize = 30.sp)
         CurrentDeliveriesSection(
-            viewModel = deliveryHistoryViewModel,
+            deliveryHistoryViewModel = deliveryHistoryViewModel,
+            user = user,
             navController = navController
         )
         PastDeliveriesSection(viewModel = deliveryHistoryViewModel, navController = navController)
@@ -64,9 +66,10 @@ fun HomeScreen(
 fun CurrentDeliveriesSection(
     modifier: Modifier = Modifier,
     navController: NavController = rememberNavController(),
-    viewModel: DeliveryHistoryViewModel = viewModel()
+    user: User? = User(),
+    deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
 ) {
-    val currentDeliveries by viewModel.currentDeliveries.collectAsState()
+    val currentDeliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
@@ -79,14 +82,19 @@ fun CurrentDeliveriesSection(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Create New Order",
+                text = if(user!!.role=="driver") "Accept New Delivery" else "Create New Order",
                 fontSize = 20.sp,
                 modifier = Modifier
                     .padding(bottom = 8.dp)
             )
             ElevatedButton(
                 onClick = {
-//                    navController.navigate("createOrder")
+                    if(user!!.role=="driver"){
+                        navController.navigate("lobby")
+                    }else{
+                        navController.navigate("createOrder")
+                    }
+                    navController.navigate("createOrder")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

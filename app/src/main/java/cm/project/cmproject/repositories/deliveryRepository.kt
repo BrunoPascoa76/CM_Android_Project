@@ -24,6 +24,8 @@ class DeliveryRepository {
         return try {
             Firebase.firestore.collection("deliveries").document(delivery.deliveryId)
                 .set(delivery).await()
+            Firebase.firestore.collection("pendingDeliveries").document(delivery.deliveryId)
+                .set(delivery).await()
             Result.Success(true)
         } catch (e: Exception) {
             Result.Error(e)

@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Address
 import cm.project.cmproject.models.Delivery
+import cm.project.cmproject.models.Dimensions
+import cm.project.cmproject.models.Parcel
 import cm.project.cmproject.models.Step
 import cm.project.cmproject.models.User
 import cm.project.cmproject.repositories.DeliveryRepository
@@ -19,10 +21,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.UUID
 
 class DeliveryViewModel : ViewModel() {
     private val _accepted = MutableStateFlow<Boolean>(false)
-    val accepted = _accepted.asStateFlow()
 
     private val _state = MutableStateFlow<Delivery?>(null)
     val state = _state.asStateFlow()
@@ -61,32 +63,6 @@ class DeliveryViewModel : ViewModel() {
             }
         }
         getRelatedUsers()
-    }
-
-    fun fetchCurrentDelivery(user: User?) {
-        if (user != null) {
-            viewModelScope.launch {
-                when (val result = DeliveryRepository().getAllByUserIdAndStatus(
-                    user.uid,
-                    listOf("Pending", "Accepted", "In Transit")
-                )) {
-                    is Result.Success -> {
-                        _errorMessage.value = null
-                        if (result.data.isEmpty()) {
-                            _state.value = null
-                        } else {
-                            //TODO: consider what we should do if user is involved in multiple active deliveries (more for customers than drivers)
-                            _state.value = result.data[0]
-                        }
-                    }
-
-                    is Result.Error -> {
-                        _state.value = null
-                        _errorMessage.value = result.exception.message
-                    }
-                }
-            }
-        }
     }
 
     fun submitQRCode(result: String) {
@@ -218,13 +194,11 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun createDelivery(
-        parcelId: String,
-        deliveryId: String,
-        userId: String,
+        senderId: String,
+        recipientId: String,
         fromAddress: String,
         toAddress: String,
-        email: String,
-        phoneNumber: String,
+
         label: String,
         isFragile: Boolean,
         weight: String,
@@ -234,22 +208,34 @@ class DeliveryViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             val newDelivery = Delivery(
-                parcelId = parcelId,
-                deliveryId = deliveryId,
-                recipientId = userId,
-                senderId = userId,
+                deliveryId = UUID.randomUUID().toString(),
+
+                senderId = senderId,
+                recipientId = recipientId,
+
                 fromAddress = fromAddress,
                 toAddress = toAddress,
+
                 status = "Pending",
                 completedSteps = 0,
-                email = email,
-                phoneNumber = phoneNumber,
-                label = label,
-                isFragile = isFragile,
-                weight = weight,
-                length = length,
-                width = width,
-                height = height
+
+                steps = listOf(
+                    Step(description = "Driver Assigned", isCompleted = false),
+                    Step(description = "Pickup", isCompleted = false),
+                    Step(description = "In Transit", isCompleted = false),
+                    Step(description = "Delivered", isCompleted = false)
+                ),
+
+                parcel = Parcel(
+                    label=label,
+                    isFragile=isFragile,
+                    weight=weight,
+                    dimensions= Dimensions(
+                        length=length,
+                        width=width,
+                        height=height
+                    )
+                ),
             )
             when (val deliveryResult = DeliveryRepository().insertDelivery(newDelivery)) {
                 is Result.Success -> {

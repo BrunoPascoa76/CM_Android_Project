@@ -9,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
@@ -17,6 +16,7 @@ import cm.project.cmproject.ui.HomeScreen
 import cm.project.cmproject.ui.LobbyScreen
 import cm.project.cmproject.ui.MapScreen
 import cm.project.cmproject.ui.Navbar
+import cm.project.cmproject.ui.NewOrderScreen
 import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
@@ -121,29 +121,23 @@ fun AppNavHost(
                 navController = navController
             )
         }
-        composable("mapScreen") {
+        composable("mapScreen/{addressType}") { backStackEntry ->
             MapScreen(
                 navController = navController,
                 mapViewModel = mapViewModel,
-                deliveryViewModel = TODO(),
-                addressType = TODO()
+                deliveryViewModel = deliveryViewModel,
+                addressType = backStackEntry.arguments?.getString("addressType") ?: "fromAddress"
             )
         }
-        composable(
-            route = "mapScreen?addressType={addressType}",
-            arguments = listOf(navArgument("addressType") { defaultValue = "fromAddress" })
-        ) { backStackEntry ->
-            val addressType = backStackEntry.arguments?.getString("addressType") ?: "fromAddress"
-            MapScreen(mapViewModel, deliveryViewModel, navController, addressType)
-        }
-        /*
+
         composable("createNewOrder") {
-            Navbar(navController) {
+            Navbar(navController, userViewModel) {
                 NewOrderScreen(
                     navController = navController,
+                    userViewModel = userViewModel,
                     deliveryViewModel = deliveryViewModel
                 )
             }
-        }*/
+        }
     }
 }

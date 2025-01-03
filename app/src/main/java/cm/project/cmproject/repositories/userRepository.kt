@@ -35,4 +35,14 @@ class UserRepository{
             Result.Error(e)
         }
     }
+
+    suspend fun getUserByEmail(recipientEmail: String): Result<User?> {
+        return try{
+            val snapshot= Firebase.firestore.collection("users").whereEqualTo("email", recipientEmail).get().await()
+            val user=snapshot.documents.first().toObject<User>()
+            Result.Success(user)
+        }catch (e: Exception){
+            Result.Error(e)
+        }
+    }
 }

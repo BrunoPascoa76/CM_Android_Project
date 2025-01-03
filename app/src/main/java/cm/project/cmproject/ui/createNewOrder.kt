@@ -24,12 +24,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -45,11 +45,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import cm.project.cmproject.repositories.Result
+import cm.project.cmproject.repositories.UserRepository
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.ParcelViewModel
 import cm.project.cmproject.viewModels.UserViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -61,21 +61,28 @@ fun NewOrderScreen(
     userViewModel: UserViewModel = viewModel(),
     deliveryViewModel: DeliveryViewModel = viewModel(),
     navController: NavHostController = rememberNavController(),
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
 ) {
-    val parcel by parcelViewModel.state.collectAsStateWithLifecycle()
-    val delivery by deliveryViewModel.state.collectAsStateWithLifecycle()
     val user by userViewModel.state.collectAsStateWithLifecycle()
 
-    var parcelId: String by remember { mutableStateOf("") } // Initialize as empty string
-    var deliveryId: String by remember { mutableStateOf("") } // Initialize as empty string
-    var email: String by remember { mutableStateOf(user?.email ?: "") }
-    var userlId: String by remember { mutableStateOf(user?.uid ?: "") }
+    var recipientEmail: String by remember { mutableStateOf("") }
+    var recipientId: String? by remember { mutableStateOf(null) }
+
     val fromAddress by deliveryViewModel.fromAddress.collectAsState()
     val toAddress by deliveryViewModel.toAddress.collectAsState()
-    var phoneNumber: String by remember { mutableStateOf(user?.phoneNumber ?: "") }
     val validFieldsUniversal =
-        remember { mutableStateListOf(true, true, true, true, true, true, true, true, true) }
+        remember {
+            mutableStateListOf(
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+            )
+        }
 
     var isToggled by remember { mutableStateOf(false) }
 
@@ -86,6 +93,25 @@ fun NewOrderScreen(
     var width: String by remember { mutableStateOf("") }
     var height: String by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit){
+        deliveryViewModel.updateFromAddress(user!!.address.address) //while the user can always choose a different address if they want, it uses the account's address as a default
+    }
+
+    LaunchedEffect(recipientEmail) {
+        if (recipientEmail.contains("@")) { //don't need to search unless email is valid
+            when(val result = UserRepository().getUserByEmail(recipientEmail)){
+                is Result.Success -> {
+                    recipientId=result.data!!.uid
+                    validFieldsUniversal[1]=true
+                    if(toAddress.isEmpty() && result.data.address.address.isNotEmpty()){ //if the user hasn't specified a to address yet, use the recipient's registered address
+                        deliveryViewModel.updateToAddress(result.data.address.address)
+                        validFieldsUniversal[0]=fromAddress.isNotEmpty()
+                    }
+                }
+                is Result.Error -> {}
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -138,12 +164,13 @@ fun NewOrderScreen(
                                     } else {
                                         deliveryViewModel.updateFromAddress(newValue)
                                     }
-                                    validFieldsUniversal[0] = toAddress.isNotEmpty()
+                                    validFieldsUniversal[0] =
+                                        fromAddress.isNotEmpty() && toAddress.isNotEmpty()
                                 }
                             )
                             Spacer(modifier = Modifier.width(15.dp))
                             TextButton( // Use TextButton for smaller size
-                                onClick = { navController.navigate("mapScreen?addressType=fromAddress") },
+                                onClick = { navController.navigate("mapScreen/fromAddress") },
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier
                                     .shadow(
@@ -182,7 +209,7 @@ fun NewOrderScreen(
                             )
                             Spacer(modifier = Modifier.width(15.dp))
                             TextButton( // Use TextButton for smaller size
-                                onClick = { navController.navigate("mapScreen?addressType=toAddress") },
+                                onClick = { navController.navigate("mapScreen/toAddress") },
                                 shape = RoundedCornerShape(10.dp),
                                 modifier = Modifier
                                     .shadow(
@@ -200,35 +227,23 @@ fun NewOrderScreen(
                         }
                     }
                 }
-                //InvalidFieldsMessage(validFieldsUniversal, 1, "Please enter your full name")
+                InvalidFieldsMessage(validFieldsUniversal, 0, "Please enter valid addresses")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     singleLine = true,
-                    label = { Text("Customer Email") },
-                    value = email, // Display the current user's email
+                    label = { Text("Recipient Email") },
+                    value = recipientEmail, // Display the recipient's email
                     onValueChange = {
-                        email = it; validFieldsUniversal[2] = it.contains("@")
+                        recipientEmail = it; validFieldsUniversal[1] = false //for safety's sake, keep it false until we have finished verifying the email
                     }
                 )
                 InvalidFieldsMessage(
                     validFieldsUniversal,
-                    0,
-                    "Must enter a valid email"
+                    1,
+                    "Please enter a valid email"
                 )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    label = { Text("Phone Number") },
-                    value = phoneNumber, // Display the current user's phone number
-                    onValueChange = {
-                        phoneNumber = it; validFieldsUniversal[3] = phoneNumber.isNotEmpty()
-                    }
-                )
-                InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter your phone number")
-
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
@@ -257,7 +272,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    label = { Text("Weight Kg") },
+                    label = { Text("Weight (Kg)") },
                     value = "0.000 Kg", // Display the current user's phone number
                     onValueChange = {
                         weight = it; validFieldsUniversal[5] = it.isNotEmpty()
@@ -268,7 +283,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    label = { Text("Length cm") },
+                    label = { Text("Length (cm)") },
                     value = "0 cm", // Display the current user's phone number
                     onValueChange = {
                         length = it; validFieldsUniversal[6] = it.isNotEmpty()
@@ -279,7 +294,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    label = { Text("Width cm") },
+                    label = { Text("Width (cm)") },
                     value = "0 cm", // Display the current user's phone number
                     onValueChange = {
                         width = it; validFieldsUniversal[7] = it.isNotEmpty()
@@ -290,7 +305,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    label = { Text("Height cm") },
+                    label = { Text("Height (cm)") },
                     value = "0 cm", // Display the current user's phone number
                     onValueChange = {
                         height = it; validFieldsUniversal[8] = it.isNotEmpty()
@@ -315,26 +330,20 @@ fun NewOrderScreen(
             enabled = validFieldsUniversal.all { it },
             onClick = {
                 // Generate a UUID for parcelId
-                parcelId = java.util.UUID.randomUUID().toString()
-                deliveryId = java.util.UUID.randomUUID().toString()
-                coroutineScope.launch {
-                    deliveryViewModel.createDelivery(
-                        deliveryId = deliveryId,
-                        parcelId = parcelId,
-                        userId = userlId,
-                        fromAddress = fromAddress,
-                        toAddress = toAddress,
-                        email = email,
-                        phoneNumber = phoneNumber,
-                        label = label,
-                        isFragile = isFragile,
-                        weight = weight,
-                        length = length,
-                        width = width,
-                        height = height,
-                    )
-                    navController.navigate("home") // Navigate to the home screen
-                }
+                deliveryViewModel.createDelivery(
+                    senderId = user!!.uid,
+                    recipientId = recipientId!!,
+                    fromAddress = fromAddress,
+                    toAddress = toAddress,
+
+                    label = label,
+                    isFragile = isFragile,
+                    weight = weight,
+                    length = length,
+                    width = width,
+                    height = height,
+                )
+                navController.navigate("home") // Navigate to the home screen
             },
         ) {
             Text("Submit")
