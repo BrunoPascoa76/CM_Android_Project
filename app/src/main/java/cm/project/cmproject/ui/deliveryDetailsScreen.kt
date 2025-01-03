@@ -65,9 +65,7 @@ fun DeliveryDetailsScreen(
     deliveryViewModel: DeliveryViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
 ) {
-    if (deliveryId != null) {
-        deliveryViewModel.fetchDelivery(deliveryId)
-    }
+    deliveryViewModel.fetchDelivery(deliveryId)
     val delivery by deliveryViewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(modifier = modifier, topBar = {

@@ -2,9 +2,11 @@ package cm.project.cmproject.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +17,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -28,10 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.models.User
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.UserViewModel
 
@@ -43,22 +46,31 @@ fun HomeScreen(
     userViewModel: UserViewModel = viewModel(),
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
 ) {
-    val user by userViewModel.state.collectAsState()
+    val user by userViewModel.state.collectAsStateWithLifecycle()
 
     user?.uid?.let {
         deliveryHistoryViewModel.loadCurrentDeliveries(it)
         deliveryHistoryViewModel.loadPastDeliveries(it)
     }
 
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(modifier = Modifier.size(70.dp))
-        Text(text = "Hello, ${user?.fullName}", fontSize = 30.sp)
-        CurrentDeliveriesSection(
-            deliveryHistoryViewModel = deliveryHistoryViewModel,
-            user = user,
-            navController = navController
-        )
-        PastDeliveriesSection(viewModel = deliveryHistoryViewModel, navController = navController)
+    if (user != null) {
+        Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.size(70.dp))
+            Text(text = "Hello, ${user?.fullName}", fontSize = 30.sp)
+            CurrentDeliveriesSection(
+                deliveryHistoryViewModel = deliveryHistoryViewModel,
+                userViewModel = userViewModel,
+                navController = navController
+            )
+            PastDeliveriesSection(
+                viewModel = deliveryHistoryViewModel,
+                navController = navController
+            )
+        }
+    } else {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
     }
 }
 
@@ -66,9 +78,10 @@ fun HomeScreen(
 fun CurrentDeliveriesSection(
     modifier: Modifier = Modifier,
     navController: NavController = rememberNavController(),
-    user: User? = User(),
+    userViewModel: UserViewModel = viewModel(),
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
 ) {
+    val user by userViewModel.state.collectAsState()
     val currentDeliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
     ElevatedCard(
         modifier = modifier
@@ -82,19 +95,18 @@ fun CurrentDeliveriesSection(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if(user!!.role=="driver") "Accept New Delivery" else "Create New Order",
+                text = if (user!!.role == "driver") "Accept New Delivery" else "Create New Order",
                 fontSize = 20.sp,
                 modifier = Modifier
                     .padding(bottom = 8.dp)
             )
             ElevatedButton(
                 onClick = {
-                    if(user!!.role=="driver"){
+                    if (user!!.role != "driver") {
                         navController.navigate("lobby")
-                    }else{
-                        navController.navigate("createOrder")
+                    } else {
+                        navController.navigate("createNewOrder")
                     }
-                    navController.navigate("createOrder")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

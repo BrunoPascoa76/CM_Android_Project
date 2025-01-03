@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -149,15 +150,23 @@ fun PendingDeliveryCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Recipient Address:")
-                    Text(recipient?.address?.toString() ?: "Loading...")
+                    Text("Recipient Address:", modifier = Modifier.weight(0.3f))
+                    Text(
+                        recipient?.address?.address ?: "Loading...",
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(0.7f)
+                    )
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Sender Address:")
-                    Text(sender?.address?.toString() ?: "Loading...")
+                    Text("Sender Address:", modifier = Modifier.weight(0.3f))
+                    Text(
+                        sender?.address?.address ?: "Loading...",
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(0.7f)
+                    )
                 }
 
                 Button(onClick = {

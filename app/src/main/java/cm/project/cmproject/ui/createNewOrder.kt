@@ -79,8 +79,6 @@ fun NewOrderScreen(
                 false,
                 false,
                 false,
-                false,
-                false
             )
         }
 
@@ -258,14 +256,14 @@ fun NewOrderScreen(
                 OutlinedTextField(
                     singleLine = true,
                     label = { Text("Description") },
-                    value = label, // Display the current user's email
+                    value = label,
                     onValueChange = {
-                        label = it; validFieldsUniversal[4] = it.isNotEmpty()
+                        label = it; validFieldsUniversal[2] = it.isNotEmpty()
                     }
                 )
                 InvalidFieldsMessage(
                     validFieldsUniversal,
-                    4,
+                    2,
                     "Must enter a Description"
                 )
 
@@ -273,45 +271,45 @@ fun NewOrderScreen(
 
                 OutlinedTextField(
                     label = { Text("Weight (Kg)") },
-                    value = "0.000 Kg", // Display the current user's phone number
+                    value = weight,
                     onValueChange = {
-                        weight = it; validFieldsUniversal[5] = it.isNotEmpty()
+                        weight = it; validFieldsUniversal[3] = it.isNotEmpty()
                     }
                 )
-                InvalidFieldsMessage(validFieldsUniversal, 5, "Please enter the weight")
+                InvalidFieldsMessage(validFieldsUniversal, 3, "Please enter the weight")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     label = { Text("Length (cm)") },
-                    value = "0 cm", // Display the current user's phone number
+                    value = length,
                     onValueChange = {
-                        length = it; validFieldsUniversal[6] = it.isNotEmpty()
+                        length = it; validFieldsUniversal[4] = it.isNotEmpty()
                     }
                 )
-                InvalidFieldsMessage(validFieldsUniversal, 6, "Please enter the length")
+                InvalidFieldsMessage(validFieldsUniversal, 4, "Please enter the length")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     label = { Text("Width (cm)") },
-                    value = "0 cm", // Display the current user's phone number
+                    value = width,
                     onValueChange = {
-                        width = it; validFieldsUniversal[7] = it.isNotEmpty()
+                        width = it; validFieldsUniversal[5] = it.isNotEmpty()
                     }
                 )
-                InvalidFieldsMessage(validFieldsUniversal, 7, "Please enter the width")
+                InvalidFieldsMessage(validFieldsUniversal, 5, "Please enter the width")
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     label = { Text("Height (cm)") },
-                    value = "0 cm", // Display the current user's phone number
+                    value = height,
                     onValueChange = {
-                        height = it; validFieldsUniversal[8] = it.isNotEmpty()
+                        height = it; validFieldsUniversal[6] = it.isNotEmpty()
                     }
                 )
-                InvalidFieldsMessage(validFieldsUniversal, 8, "Please enter the height")
+                InvalidFieldsMessage(validFieldsUniversal, 6, "Please enter the height")
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

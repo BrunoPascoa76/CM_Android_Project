@@ -22,9 +22,8 @@ class DeliveryRepository {
 
     suspend fun insertDelivery(delivery: Delivery): Result<Boolean> {
         return try {
-            Firebase.firestore.collection("deliveries").document(delivery.deliveryId)
-                .set(delivery).await()
-            Firebase.firestore.collection("pendingDeliveries").document(delivery.deliveryId)
+            Firebase.firestore.collection("pendingDeliveries")
+                .document(delivery.deliveryId) //once they are accepted, they'll move from pendingDeliveries to regular deliveries
                 .set(delivery).await()
             Result.Success(true)
         } catch (e: Exception) {

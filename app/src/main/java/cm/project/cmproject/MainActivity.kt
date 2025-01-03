@@ -13,8 +13,8 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import cm.project.cmproject.components.LocationWorker
-import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.repositories.DeliveryRepository
+import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.ui.navigation.AppNavHost
 import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.viewModels.UserViewModel
@@ -42,13 +42,24 @@ class MainActivity : ComponentActivity() {
                 if (user != null) {
                     viewModel.fetchUserTable(user.uid)
                     if (viewModel.state.value?.role == "driver") {
-                        val deliveryRepository = DeliveryRepository()
                         lifecycleScope.launch {
-                            val deliveries =
-                                deliveryRepository.getDeliveryById(user.uid) as List<Delivery>
-                            deliveries.forEach { delivery ->
-                                scheduleLocationUpdates(delivery.deliveryId, this@MainActivity)
+                            when (val result = DeliveryRepository().getAllByUserIdAndStatus(
+                                user.uid,
+                                listOf("Pending", "Accepted", "Pickup", "In Transit", "IN_TRANSIT")
+                            )) {
+                                is Result.Success -> {
+                                    val deliveries = result.data
+                                    deliveries.forEach { delivery ->
+                                        scheduleLocationUpdates(
+                                            delivery.deliveryId,
+                                            this@MainActivity
+                                        )
+                                    }
+                                }
+
+                                is Result.Error -> {}
                             }
+
                         }
                     }
                 }

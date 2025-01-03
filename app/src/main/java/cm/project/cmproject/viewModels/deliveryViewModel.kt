@@ -24,7 +24,7 @@ import timber.log.Timber
 import java.util.UUID
 
 class DeliveryViewModel : ViewModel() {
-    private val _accepted = MutableStateFlow<Boolean>(false)
+    private val _accepted = MutableStateFlow(false)
 
     private val _state = MutableStateFlow<Delivery?>(null)
     val state = _state.asStateFlow()
@@ -227,13 +227,13 @@ class DeliveryViewModel : ViewModel() {
                 ),
 
                 parcel = Parcel(
-                    label=label,
-                    isFragile=isFragile,
-                    weight=weight,
-                    dimensions= Dimensions(
-                        length=length,
-                        width=width,
-                        height=height
+                    label = label,
+                    isFragile = isFragile,
+                    weight = weight,
+                    dimensions = Dimensions(
+                        length = length,
+                        width = width,
+                        height = height
                     )
                 ),
             )
