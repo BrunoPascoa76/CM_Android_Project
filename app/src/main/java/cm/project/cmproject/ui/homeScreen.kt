@@ -102,7 +102,7 @@ fun CurrentDeliveriesSection(
             )
             ElevatedButton(
                 onClick = {
-                    if (user!!.role != "driver") {
+                    if (user!!.role == "driver") {
                         navController.navigate("lobby")
                     } else {
                         navController.navigate("createNewOrder")
