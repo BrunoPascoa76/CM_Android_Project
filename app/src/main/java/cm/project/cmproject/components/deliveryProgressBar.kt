@@ -64,6 +64,10 @@ private fun DeliveryProgressBarComponent(
     driverLocation: LatLng?,
     modifier: Modifier = Modifier
 ) {
+    val scrollState = rememberScrollState()
+    LaunchedEffect(delivery?.deliveryId) {
+        scrollState.scrollTo(scrollState.maxValue)
+    }
 
     if (delivery != null) {
         val completedSteps = delivery.completedSteps
@@ -73,7 +77,7 @@ private fun DeliveryProgressBarComponent(
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .horizontalScroll(state = rememberScrollState()),
+                .horizontalScroll(state = scrollState),
             horizontalArrangement = Arrangement.Center
         ) {
             if (steps.isEmpty()) {
