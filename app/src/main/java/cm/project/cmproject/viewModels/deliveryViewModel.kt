@@ -205,9 +205,34 @@ class DeliveryViewModel : ViewModel() {
         weight: String,
         length: String,
         width: String,
-        height: String
+        height: String,
+
+        context: Context
     ) {
         viewModelScope.launch {
+            var driverAssignedStep = Step(description = "Driver Assigned", isCompleted = false)
+            var pickupStep = Step(description = "Pickup", isCompleted = false)
+            var inTransitStep = Step(description = "In Transit", isCompleted = false)
+            var deliveredStep = Step(description = "Delivered", isCompleted = false)
+
+            when (val result =
+                LocationRepository().getCoordinatesFromAddress(context, fromAddress)) {
+                is Result.Success -> {
+                    driverAssignedStep = driverAssignedStep.copy(location = result.data)
+                    pickupStep = pickupStep.copy(location = result.data)
+                }
+
+                is Result.Error -> {}
+            }
+
+            when (val result = LocationRepository().getCoordinatesFromAddress(context, toAddress)) {
+                is Result.Success -> {
+                    inTransitStep = inTransitStep.copy(location = result.data)
+                    deliveredStep = deliveredStep.copy(location = result.data)
+                }
+
+                is Result.Error -> {}
+            }
             val newDelivery = Delivery(
                 deliveryId = UUID.randomUUID().toString(),
 
@@ -221,10 +246,10 @@ class DeliveryViewModel : ViewModel() {
                 completedSteps = 0,
 
                 steps = listOf(
-                    Step(description = "Driver Assigned", isCompleted = false),
-                    Step(description = "Pickup", isCompleted = false),
-                    Step(description = "In Transit", isCompleted = false),
-                    Step(description = "Delivered", isCompleted = false)
+                    driverAssignedStep,
+                    pickupStep,
+                    inTransitStep,
+                    deliveredStep
                 ),
 
                 parcel = Parcel(

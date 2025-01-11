@@ -2,6 +2,7 @@ package cm.project.cmproject.repositories
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Geocoder
 import cm.project.cmproject.models.Address
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
@@ -85,6 +86,30 @@ class LocationRepository {
                 Result.Error(Exception("No place found"))
             }
             Result.Success(createAddressFromComponents(response.placeLikelihoods[0].place))
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
+
+    @Suppress("DEPRECATION")//had to suppress the deprecation warning as the non-deprecated version only works with API>=33, which requires very recent phones
+    fun getCoordinatesFromAddress(context: Context, address: String): Result<Address> {
+        return try {
+            val geocoder = Geocoder(context)
+            val addresses = geocoder.getFromLocationName(
+                address,
+                1
+            ) //geocoder is better for this specific case (in terms of code amount)
+            if (!addresses.isNullOrEmpty()) {
+                Result.Success(
+                    Address(
+                        address = addresses[0].getAddressLine(0),
+                        latitude = addresses[0].latitude,
+                        longitude = addresses[0].longitude
+                    )
+                )
+            } else {
+                Result.Error(Exception("No address found"))
+            }
         } catch (e: Exception) {
             Result.Error(e)
         }
