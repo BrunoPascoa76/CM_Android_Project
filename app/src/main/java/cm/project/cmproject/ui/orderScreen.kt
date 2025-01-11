@@ -237,7 +237,7 @@ private fun orderPage(
         }
 
         DeliveryProgressBar(
-            modifier = Modifier.padding(bottom = 10.dp),
+            modifier = Modifier.padding(bottom = 20.dp),
             deliveryHistoryViewModel = deliveryHistoryViewModel,
             index = index
         )

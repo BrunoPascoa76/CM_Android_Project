@@ -181,10 +181,10 @@ fun OrderDetails(
 
         }
         Column(
-            modifier = Modifier.padding(top = 20.dp),
+            modifier = Modifier.padding(top = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            DeliveryProgressBar(deliveryViewModel = deliveryViewModel)
+            DeliveryProgressBar(deliveryViewModel = deliveryViewModel,modifier=Modifier.padding(bottom=10.dp))
             if (delivery!!.status != "delivered") { //no need to show any of these for past deliveries
                 if (user != null && user!!.role == "customer") { //if customer, display qr codes
                     QrCode(delivery!!.deliveryId)
