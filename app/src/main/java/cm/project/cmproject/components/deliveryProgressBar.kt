@@ -1,6 +1,7 @@
 package cm.project.cmproject.components
 
 import android.location.Location
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +67,10 @@ private fun DeliveryProgressBarComponent(
 ) {
     val scrollState = rememberScrollState()
     LaunchedEffect(delivery?.deliveryId) {
-        scrollState.scrollTo(scrollState.maxValue)
+        scrollState.animateScrollTo(
+            scrollState.maxValue,
+            animationSpec = tween(durationMillis = 1000)
+        )
     }
 
     if (delivery != null) {
