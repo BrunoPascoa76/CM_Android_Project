@@ -37,13 +37,13 @@ class MapViewModel : ViewModel() {
     private val _markers = mutableStateOf<List<MarkerData>>(emptyList())
     val markers: State<List<MarkerData>> = _markers
 
-    lateinit var geoCoder: Geocoder
+    private lateinit var geoCoder: Geocoder
 
     // Define a MarkerData class to hold the position and title of a marker
     data class MarkerData(val position: LatLng, val title: String)
 
     fun addMarker(markerData: MarkerData) {
-        _markers.value = _markers.value + markerData
+        _markers.value += markerData
     }
 
     private val _selectedLocationAddress = MutableStateFlow("")
@@ -72,6 +72,10 @@ class MapViewModel : ViewModel() {
         } else {
             Timber.e("Location permission is not granted.")
         }
+    }
+
+    fun updateSelectedLocationAddress(latitude: Double, longitude: Double) {
+        _selectedLocation.value = LatLng(latitude, longitude)
     }
 
     // Function to geocode the selected place and update the selected location state

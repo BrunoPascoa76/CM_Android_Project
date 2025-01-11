@@ -174,6 +174,7 @@ fun MapScreen(
 
             // If a location was selected from the search bar, place a marker there
             selectedLocation?.let {
+                mapViewModel.updateSelectedLocation(it.latitude, it.longitude)
                 Marker(
                     state = MarkerState(position = it), // Place the marker at the selected location
                     title = "Selected Location", // Set the title for the marker
@@ -184,6 +185,7 @@ fun MapScreen(
             }
 
             clickedLocation.value?.let {
+                selectedLocation = LatLng(it.latitude, it.longitude)
                 Marker(
                     state = MarkerState(position = it),
                     title = "Clicked Location",
