@@ -158,6 +158,7 @@ fun NewOrderScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             OutlinedTextField(
+                                singleLine = true,
                                 readOnly = true,
                                 modifier = Modifier.weight(1f), // Occupy remaining space
                                 label = { Text("From Address") },
@@ -198,6 +199,7 @@ fun NewOrderScreen(
                             horizontalArrangement = Arrangement.SpaceBetween // Add space between items
                         ) {
                             OutlinedTextField(
+                                singleLine = true,
                                 readOnly = true,
                                 modifier = Modifier.weight(1f), // Occupy remaining space
                                 label = { Text("To Address") },
@@ -277,6 +279,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
+                    singleLine = true,
                     label = { Text("Weight (Kg)") },
                     value = weight,
                     onValueChange = {
@@ -288,6 +291,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
+                    singleLine = true,
                     label = { Text("Length (cm)") },
                     value = length,
                     onValueChange = {
@@ -299,6 +303,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
+                    singleLine = true,
                     label = { Text("Width (cm)") },
                     value = width,
                     onValueChange = {
@@ -310,6 +315,7 @@ fun NewOrderScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
+                    singleLine = true,
                     label = { Text("Height (cm)") },
                     value = height,
                     onValueChange = {
