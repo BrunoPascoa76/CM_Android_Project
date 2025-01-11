@@ -104,10 +104,24 @@ fun DeliveryProgressBar(
     index: Int = 0
 ) {
     val deliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
-    val driverLocation by deliveryHistoryViewModel.currentLocation.collectAsState()
+
+    //need to do this to not have to replicate everything
+    val deliveryViewModel: DeliveryViewModel = viewModel()
+    deliveryViewModel.fetchDelivery(deliveries[index].deliveryId)
+
+    val driverLocation by deliveryViewModel.currentLocation.collectAsState()
+
+    LaunchedEffect(deliveries[index].deliveryId) {
+        deliveryViewModel.listenForDeliveryStatusUpdates()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            deliveryViewModel.detachListener()
+        }
+    }
 
     val delivery = deliveries.getOrNull(index)
-
     DeliveryProgressBarComponent(delivery, driverLocation, modifier)
 }
 
