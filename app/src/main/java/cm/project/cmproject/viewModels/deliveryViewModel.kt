@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cm.project.cmproject.models.Address
 import cm.project.cmproject.models.Delivery
+import cm.project.cmproject.models.DeliveryStatus
 import cm.project.cmproject.models.Dimensions
+import cm.project.cmproject.models.OrderStatus
 import cm.project.cmproject.models.Parcel
 import cm.project.cmproject.models.Step
 import cm.project.cmproject.models.User
@@ -16,7 +18,12 @@ import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.repositories.UserRepository
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -46,6 +53,9 @@ class DeliveryViewModel : ViewModel() {
 
     private val _toAddress = MutableStateFlow("")
     val toAddress = _toAddress.asStateFlow()
+
+    private val _currentLocation = MutableStateFlow<LatLng?>(null)
+    val currentLocation = _currentLocation.asStateFlow()
 
     fun fetchDelivery(deliveryId: String) {
         _errorMessage.value = null
@@ -300,4 +310,40 @@ class DeliveryViewModel : ViewModel() {
     fun updateToAddress(newAddress: String) {
         _toAddress.value = newAddress
     }
+
+    fun listenForDeliveryStatusUpdates() {
+        val database =
+            FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
+        val deliveryStatusRef = database.getReference("deliveryStatus/${_state.value?.deliveryId}")
+
+        deliveryStatusRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
+                deliveryStatus?.let {
+                    updateDeliveryStatus(it)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle possible errors.
+            }
+        })
+    }
+
+    fun updateDeliveryStatus(deliveryStatus: DeliveryStatus) {
+        val newStatus = mapDeliveryStatusToOrderStatus(deliveryStatus)
+        val newLocation = LatLng(deliveryStatus.latitude, deliveryStatus.longitude)
+        _currentLocation.value = newLocation
+    }
+
+    private fun mapDeliveryStatusToOrderStatus(deliveryStatus: DeliveryStatus): OrderStatus {
+        return when (deliveryStatus.status) {
+            "DRIVER_ASSIGNED" -> OrderStatus.DRIVER_ASSIGNED
+            "PICKUP" -> OrderStatus.PICKUP
+            "IN_TRANSIT" -> OrderStatus.IN_TRANSIT
+            "DELIVERED" -> OrderStatus.DELIVERED
+            else -> OrderStatus.IN_TRANSIT
+        }
+    }
+
 }

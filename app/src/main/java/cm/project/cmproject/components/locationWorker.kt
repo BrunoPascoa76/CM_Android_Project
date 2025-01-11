@@ -7,7 +7,11 @@ import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -25,7 +29,24 @@ class LocationWorker(
         val location = fetchUserLocation(applicationContext) ?: return Result.failure()
 
         sendDriverLocation(deliveryId, location)
+
+        // Schedule the next update
+//        scheduleLocationUpdates(deliveryId, applicationContext)
         return Result.success()
+    }
+
+    private fun scheduleLocationUpdates(deliveryId: String, context: Context) {
+        val workManager = WorkManager.getInstance(context)
+        val locationWorkRequest = OneTimeWorkRequestBuilder<LocationWorker>()
+            .setInputData(workDataOf("deliveryId" to deliveryId))
+            .addTag(deliveryId)
+            .build()
+
+        workManager.enqueueUniqueWork(
+            deliveryId,
+            ExistingWorkPolicy.REPLACE,
+            locationWorkRequest
+        )
     }
 }
 
