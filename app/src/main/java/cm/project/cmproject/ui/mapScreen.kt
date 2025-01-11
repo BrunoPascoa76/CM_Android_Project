@@ -110,13 +110,7 @@ fun MapScreen(
             }
         }
     }
-    /*
-        LaunchedEffect(cameraPositionState.isMoving) {
-            if (!cameraPositionState.isMoving) {
-                mapViewModel.getAddress(cameraPositionState.position.target)
-            }
-        }
-    */
+
     // Layout that includes the search bar and the map, arranged in a vertical column
     Column(
         modifier = Modifier
@@ -140,10 +134,10 @@ fun MapScreen(
         )
         Button(
             onClick = {
-                val selectedAddress = mapViewModel.selectedLocationAddress.value
-                if (selectedAddress.isNotEmpty()) {
-                    updateAddress(selectedAddress) // Pass to the ViewModel for syncing
-                }
+                //val selectedAddress = mapViewModel.selectedLocationAddress.value
+                //if (selectedAddress.isNotEmpty()) {
+                //    updateAddress(selectedAddress) // Pass to the ViewModel for syncing
+                //}
                 navController.navigate("createneworder")
             },
             modifier = Modifier
@@ -164,6 +158,27 @@ fun MapScreen(
             onMapClick = { latLng ->
                 clickedLocation.value = latLng // Update clicked location
                 Timber.d("Map clicked at: $latLng")
+
+                //Save the clicked location
+                scope.launch {
+                    when (val result = LocationRepository().getAddressFromCoordinates(
+                        context,
+                        clickedLocation.value!!.latitude,
+                        clickedLocation.value!!.longitude
+                    )) {
+                        is Result.Success -> {
+                            val address = result.data
+                            mapViewModel.updateSelectedLocation(
+                                address.latitude,
+                                address.longitude,
+                                address.address
+                            )
+                            updateAddress(address.address)
+                        }
+
+                        is Result.Error -> {}
+                    }
+                }
             }
         ) {
             // If the user's location is available, place a marker on the map
@@ -177,37 +192,7 @@ fun MapScreen(
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 10f)
             }
 
-            // If a location was selected from the search bar, place a marker there
-            selectedLocation?.let {
-                Marker(
-                    state = MarkerState(position = it), // Place the marker at the selected location
-                    title = "Selected Location", // Set the title for the marker
-                    snippet = "This is the place you selected." // Set the snippet for the marker
-                )
-                // Move the camera to the selected location with a zoom level of 15f
-                cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 15f)
-            }
-
             clickedLocation.value?.let { coordinates ->
-                scope.launch {
-                    when (val result = LocationRepository().getAddressFromCoordinates(
-                        context,
-                        coordinates.latitude,
-                        coordinates.longitude
-                    )) {
-                        is Result.Success -> {
-                            val address = result.data
-                            mapViewModel.updateSelectedLocation(
-                                address.latitude,
-                                address.longitude,
-                                address.address
-                            )
-                        }
-
-                        is Result.Error -> {}
-                    }
-                }
-
                 Marker(
                     state = MarkerState(position = coordinates),
                     title = "Clicked Location",
