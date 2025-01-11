@@ -81,9 +81,10 @@ class DeliveryViewModel : ViewModel() {
                     isCompleted = true,
                     completionDate = Timestamp.now()
                 )
+                val currentStep = steps[_state.value!!.completedSteps]
 
                 //update main status based on current step
-                if (_state.value!!.steps[_state.value!!.completedSteps].description in listOf(
+                if (currentStep.description in listOf(
                         "Driver Assigned",
                         "Pickup",
                         "In Transit",
