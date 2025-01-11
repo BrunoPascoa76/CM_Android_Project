@@ -6,10 +6,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import cm.project.cmproject.components.LocationWorker
@@ -22,8 +22,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("StateFlowValueCalledInComposition", "CoroutineCreationDuringComposition")
@@ -36,30 +34,36 @@ class MainActivity : ComponentActivity() {
         setContent {
             CMProjectTheme {
                 val user = auth.currentUser
-
                 val viewModel: UserViewModel = viewModel()
 
-                if (user != null) {
-                    viewModel.fetchUserTable(user.uid)
-                    if (viewModel.state.value?.role == "driver") {
-                        lifecycleScope.launch {
-                            when (val result = DeliveryRepository().getAllByUserIdAndStatus(
-                                user.uid,
-                                listOf("Pending", "Accepted", "Pickup", "In Transit", "IN_TRANSIT")
-                            )) {
-                                is Result.Success -> {
-                                    val deliveries = result.data
-                                    deliveries.forEach { delivery ->
-                                        scheduleLocationUpdates(
-                                            delivery.deliveryId,
-                                            this@MainActivity
-                                        )
+                // Use LaunchedEffect to handle async operations
+                LaunchedEffect(user) {
+                    if (user != null) {
+                        viewModel.fetchUserTable(user.uid)
+                        // Collect state changes
+                        viewModel.state.collect { state ->
+                            if (state?.role == "driver") {
+                                when (val result = DeliveryRepository().getAllByUserIdAndStatus(
+                                    user.uid,
+                                    listOf(
+                                        "Accepted",
+                                        "Pickup",
+                                        "In Transit"
+                                    )
+                                )) {
+                                    is Result.Success -> {
+                                        val deliveries = result.data
+                                        deliveries.forEach { delivery ->
+                                            scheduleLocationUpdates(
+                                                delivery.deliveryId,
+                                                this@MainActivity
+                                            )
+                                        }
                                     }
+
+                                    is Result.Error -> {}
                                 }
-
-                                is Result.Error -> {}
                             }
-
                         }
                     }
                 }
@@ -75,13 +79,13 @@ class MainActivity : ComponentActivity() {
 
 fun scheduleLocationUpdates(deliveryId: String, context: Context) {
     val workManager = WorkManager.getInstance(context)
-    val locationWorkRequest = PeriodicWorkRequestBuilder<LocationWorker>(1, TimeUnit.MINUTES)
+    val workRequest = OneTimeWorkRequestBuilder<LocationWorker>()
         .setInputData(workDataOf("deliveryId" to deliveryId))
         .build()
 
-    workManager.enqueueUniquePeriodicWork(
-        "LocationUpdateWork",
-        ExistingPeriodicWorkPolicy.UPDATE,
-        locationWorkRequest
+    workManager.enqueueUniqueWork(
+        deliveryId,
+        ExistingWorkPolicy.REPLACE,
+        workRequest
     )
 }

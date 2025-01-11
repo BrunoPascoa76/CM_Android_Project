@@ -43,6 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
 import cm.project.cmproject.components.DeliveryProgressBar
+import cm.project.cmproject.models.DeliveryStatus
 import cm.project.cmproject.utils.ManifestUtils
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -51,6 +52,10 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.android.compose.GoogleMap
@@ -61,9 +66,8 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.model.TravelMode
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -204,6 +208,8 @@ private fun orderPage(
     val currentDelivery = deliveryHistoryViewModel.currentDeliveries.value[index]
     var pickupLocation by remember { mutableStateOf<LatLng?>(null) }
     var deliveryLocation by remember { mutableStateOf<LatLng?>(null) }
+    var deliveryId by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(currentDelivery) {
         currentDelivery.let { delivery ->
             getLatLngFromAddress(context, delivery.fromAddress) { location ->
@@ -212,8 +218,10 @@ private fun orderPage(
             getLatLngFromAddress(context, delivery.toAddress) { location ->
                 deliveryLocation = location
             }
+            deliveryId = delivery.deliveryId
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -243,6 +251,7 @@ private fun orderPage(
                     .clip(MaterialTheme.shapes.medium)
             ) {
                 OrderMap(
+                    deliveryId = deliveryId!!,
                     pickupLocation = pickupLocation!!,
                     deliveryLocation = deliveryLocation!!,
                     context = context
@@ -274,62 +283,75 @@ private fun orderPage(
 @Composable
 fun OrderMap(
     context: Context,
+    deliveryId: String,
     pickupLocation: LatLng,
     deliveryLocation: LatLng,
-    currentLocation: LatLng = LatLng(40.6405, -8.6538)
+    currentLocation: LatLng = LatLng(40.6405, -8.6538),
 ) {
-    var isLoading by remember { mutableStateOf(true) }
-    var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val scope = rememberCoroutineScope()
+    var driverLocation by remember { mutableStateOf(currentLocation) }
+    var driverToPickupPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var pickupToDeliveryPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(currentLocation, 8f)
     }
 
+    // Listen for real-time location updates
+    LaunchedEffect(deliveryId) {
+        val database =
+            FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
+        val locationRef = database.getReference("deliveryStatus").child(deliveryId)
+
+        locationRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Timber.e("ana sikim android")
+                val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
+                deliveryStatus?.let {
+                    driverLocation = LatLng(it.latitude, it.longitude)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Timber.e("Location updates cancelled: ${error.message}")
+            }
+        })
+    }
+
+    // Calculate route when driver location changes
     LaunchedEffect(pickupLocation, currentLocation, deliveryLocation) {
-        withContext(Dispatchers.IO) {
-            var geoContext: GeoApiContext? = null
+        scope.launch {
             try {
-                isLoading = true
                 val apiKey = ManifestUtils.getApiKeyFromManifest(context)
-                geoContext = GeoApiContext.Builder()
+                val geoContext = GeoApiContext.Builder()
                     .apiKey(apiKey)
                     .connectTimeout(2, TimeUnit.SECONDS)
                     .readTimeout(2, TimeUnit.SECONDS)
                     .writeTimeout(2, TimeUnit.SECONDS)
                     .build()
 
-                val points = mutableListOf<LatLng>()
-
-                // First leg: Pickup to Current
+                // First leg: Current to Pickup
                 val firstLegResult = DirectionsApi.newRequest(geoContext)
                     .origin(
+                        com.google.maps.model.LatLng(
+                            currentLocation.latitude,
+                            currentLocation.longitude
+                        )
+                    )
+                    .destination(
                         com.google.maps.model.LatLng(
                             pickupLocation.latitude,
                             pickupLocation.longitude
                         )
                     )
-                    .destination(
-                        com.google.maps.model.LatLng(
-                            currentLocation.latitude,
-                            currentLocation.longitude
-                        )
-                    )
                     .mode(TravelMode.DRIVING)
                     .await()
 
-                firstLegResult.routes.firstOrNull()?.legs?.forEach { leg ->
-                    leg.steps.forEach { step ->
-                        points.addAll(step.polyline.decodePath().map {
-                            LatLng(it.lat, it.lng)
-                        })
-                    }
-                }
-
-                // Second leg: Current to Delivery
+                // Second leg: Pickup to Delivery
                 val secondLegResult = DirectionsApi.newRequest(geoContext)
                     .origin(
                         com.google.maps.model.LatLng(
-                            currentLocation.latitude,
-                            currentLocation.longitude
+                            pickupLocation.latitude,
+                            pickupLocation.longitude
                         )
                     )
                     .destination(
@@ -341,20 +363,21 @@ fun OrderMap(
                     .mode(TravelMode.DRIVING)
                     .await()
 
-                secondLegResult.routes.firstOrNull()?.legs?.forEach { leg ->
-                    leg.steps.forEach { step ->
-                        points.addAll(step.polyline.decodePath().map {
-                            LatLng(it.lat, it.lng)
-                        })
+                driverToPickupPoints = firstLegResult.routes.firstOrNull()?.legs?.flatMap { leg ->
+                    leg.steps.flatMap { step ->
+                        step.polyline.decodePath().map { LatLng(it.lat, it.lng) }
                     }
-                }
+                } ?: emptyList()
 
-                routePoints = points
+                pickupToDeliveryPoints =
+                    secondLegResult.routes.firstOrNull()?.legs?.flatMap { leg ->
+                        leg.steps.flatMap { step ->
+                            step.polyline.decodePath().map { LatLng(it.lat, it.lng) }
+                        }
+                    } ?: emptyList()
+
             } catch (e: Exception) {
                 e.printStackTrace()
-            } finally {
-                isLoading = false
-                geoContext?.shutdown()
             }
         }
     }
@@ -365,7 +388,6 @@ fun OrderMap(
         properties = MapProperties(isMyLocationEnabled = false),
         uiSettings = MapUiSettings(zoomControlsEnabled = true)
     ) {
-        // Markers and Polyline remain the same
         Marker(
             state = MarkerState(position = pickupLocation),
             title = "Pickup Location",
@@ -383,14 +405,24 @@ fun OrderMap(
         Marker(
             state = MarkerState(position = deliveryLocation),
             title = "Delivery Location",
-            snippet = "Order will be delivered here",
+            snippet = "Final destination",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         )
 
-        if (routePoints.isNotEmpty()) {
+        // Driver to Pickup route (Blue)
+        if (driverToPickupPoints.isNotEmpty()) {
             Polyline(
-                points = routePoints,
+                points = driverToPickupPoints,
                 color = Color.Blue,
+                width = 8f
+            )
+        }
+
+        // Pickup to Delivery route (Red)
+        if (pickupToDeliveryPoints.isNotEmpty()) {
+            Polyline(
+                points = pickupToDeliveryPoints,
+                color = Color.Magenta,
                 width = 8f
             )
         }
