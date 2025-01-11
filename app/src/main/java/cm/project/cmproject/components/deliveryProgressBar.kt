@@ -1,5 +1,6 @@
 package cm.project.cmproject.components
 
+import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,26 +32,45 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
+import cm.project.cmproject.viewModels.RealtimeLocationViewModel
+import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun DeliveryProgressBar(
     modifier: Modifier = Modifier,
+    realtimeLocationViewModel: RealtimeLocationViewModel = viewModel(),
     deliveryViewModel: DeliveryViewModel = viewModel()
 ) {
+
     val delivery by deliveryViewModel.state.collectAsState()
 
-    DeliveryProgressBarComponent(delivery, modifier)
+    LaunchedEffect(delivery?.deliveryId) {
+        if (delivery?.deliveryId != null) {
+            realtimeLocationViewModel.attachListener(delivery!!.deliveryId)
+        }
+    }
+    DeliveryProgressBarComponent(delivery, realtimeLocationViewModel, modifier)
+
+    DisposableEffect(Unit) {
+        onDispose {
+            realtimeLocationViewModel.detachListener()
+        }
+    }
 }
 
 @Composable
 private fun DeliveryProgressBarComponent(
     delivery: Delivery?,
-    modifier: Modifier
+    realTimeDeliveryViewModel: RealtimeLocationViewModel,
+    modifier: Modifier = Modifier
 ) {
+    val driverLocation by realTimeDeliveryViewModel.driverLocation.collectAsState()
+
     if (delivery != null) {
         val completedSteps = delivery.completedSteps
         val steps = delivery.steps
-        val progress = 0.5 //TODO: change to real value (once we get realtime db up and running)
+        val progress = calculateProgress(driverLocation, delivery)
+
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -80,12 +102,13 @@ private fun DeliveryProgressBarComponent(
 fun DeliveryProgressBar(
     modifier: Modifier = Modifier,
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel(),
+    realtimeLocationViewModel: RealtimeLocationViewModel = viewModel(),
     index: Int = 0
 ) {
     val deliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
     val delivery = deliveries.getOrNull(index)
 
-    DeliveryProgressBarComponent(delivery, modifier)
+    DeliveryProgressBarComponent(delivery, realtimeLocationViewModel, modifier)
 }
 
 @Composable
@@ -124,4 +147,40 @@ fun ProgressBar(
             color = MaterialTheme.colorScheme.primary,
         )
     }
+}
+
+fun calculateProgress(driverLocation: LatLng?, delivery: Delivery): Int {
+    // lack of data
+    if (driverLocation == null) return 0
+    if (delivery.steps.isEmpty()) return 0
+
+    //at the edges
+    if (delivery.completedSteps == 0) return 0
+    if (delivery.completedSteps == delivery.steps.size) return 100
+
+    val lastStep = delivery.steps.getOrNull(delivery.completedSteps - 1) ?: return 0
+    val currentStep = delivery.steps.getOrNull(delivery.completedSteps) ?: return 0
+
+
+    //one of the steps has unset location (it's not null, but it should be treated as if it is)
+    if (lastStep.location.address == "" || currentStep.location.address == "") return 0
+
+    val previousLocation = Location("previousLocation")
+    previousLocation.latitude = lastStep.location.latitude
+    previousLocation.longitude = lastStep.location.longitude
+
+    val nextLocation = Location("nextLocation")
+    nextLocation.latitude = currentStep.location.latitude
+    nextLocation.longitude = currentStep.location.longitude
+
+    val currentLocation = Location("currentLocation")
+    currentLocation.latitude = driverLocation.latitude
+    currentLocation.longitude = driverLocation.longitude
+
+    val totalDistance = previousLocation.distanceTo(nextLocation)
+    val currentDistance = currentLocation.distanceTo(nextLocation)
+
+    if (totalDistance == 0f) return 0 //avoid division by zero
+
+    return (((totalDistance - currentDistance) / totalDistance) * 100).toInt()
 }

@@ -44,7 +44,6 @@ fun AppNavHost(
     val addressViewModel: AddressViewModel = viewModel()
     val deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel()
     val pendingDeliveriesViewModel: PendingDeliveriesViewModel = viewModel()
-
     NavHost(
         navController = navController,
         startDestination = startDestination,
