@@ -114,4 +114,29 @@ class LocationRepository {
             Result.Error(e)
         }
     }
+
+    @Suppress("DEPRECATION")
+    suspend fun getAddressFromCoordinates(
+        context: Context,
+        latitude: Double,
+        longitude: Double
+    ): Result<Address> {
+        return try {
+            val geocoder = Geocoder(context)
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                Result.Success(
+                    Address(
+                        address = addresses[0].getAddressLine(0),
+                        latitude = addresses[0].latitude,
+                        longitude = addresses[0].longitude
+                    )
+                )
+            } else {
+                Result.Error(Exception("No address found"))
+            }
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
 }

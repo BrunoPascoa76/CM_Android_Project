@@ -74,8 +74,10 @@ class MapViewModel : ViewModel() {
         }
     }
 
-    fun updateSelectedLocation(latitude: Double, longitude: Double) {
+    fun updateSelectedLocation(latitude: Double, longitude: Double, address: String) {
         _selectedLocation.value = LatLng(latitude, longitude)
+        _searchedText.value = address
+        _selectedLocationAddress.value = address
     }
 
     // Function to geocode the selected place and update the selected location state

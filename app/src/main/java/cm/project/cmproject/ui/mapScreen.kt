@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import cm.project.cmproject.components.SearchBar
+import cm.project.cmproject.repositories.LocationRepository
+import cm.project.cmproject.repositories.Result
 import cm.project.cmproject.utils.ManifestUtils
 import cm.project.cmproject.viewModels.DeliveryViewModel
 import cm.project.cmproject.viewModels.MapViewModel
@@ -34,6 +37,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -46,6 +50,7 @@ fun MapScreen(
 ) {
     // Obtain the current context
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     // Retrieve the API key from the manifest file
     val apiKey = ManifestUtils.getApiKeyFromManifest(context)
@@ -174,7 +179,6 @@ fun MapScreen(
 
             // If a location was selected from the search bar, place a marker there
             selectedLocation?.let {
-                mapViewModel.updateSelectedLocation(it.latitude, it.longitude)
                 Marker(
                     state = MarkerState(position = it), // Place the marker at the selected location
                     title = "Selected Location", // Set the title for the marker
@@ -184,12 +188,30 @@ fun MapScreen(
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 15f)
             }
 
-            clickedLocation.value?.let {
-                selectedLocation = LatLng(it.latitude, it.longitude)
+            clickedLocation.value?.let { coordinates ->
+                scope.launch {
+                    when (val result = LocationRepository().getAddressFromCoordinates(
+                        context,
+                        coordinates.latitude,
+                        coordinates.longitude
+                    )) {
+                        is Result.Success -> {
+                            val address = result.data
+                            mapViewModel.updateSelectedLocation(
+                                address.latitude,
+                                address.longitude,
+                                address.address
+                            )
+                        }
+
+                        is Result.Error -> {}
+                    }
+                }
+
                 Marker(
-                    state = MarkerState(position = it),
+                    state = MarkerState(position = coordinates),
                     title = "Clicked Location",
-                    snippet = "Lat: ${it.latitude}, Lng: ${it.longitude}"
+                    snippet = "Lat: ${coordinates.latitude}, Lng: ${coordinates.longitude}"
                 )
             }
         }
