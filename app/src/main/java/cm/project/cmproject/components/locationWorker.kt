@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.suspendCancellableCoroutine
 import timber.log.Timber
+import java.time.Duration
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -31,7 +32,7 @@ class LocationWorker(
         sendDriverLocation(deliveryId, location)
 
         // Schedule the next update
-//        scheduleLocationUpdates(deliveryId, applicationContext)
+        scheduleLocationUpdates(deliveryId, applicationContext)
         return Result.success()
     }
 
@@ -39,6 +40,7 @@ class LocationWorker(
         val workManager = WorkManager.getInstance(context)
         val locationWorkRequest = OneTimeWorkRequestBuilder<LocationWorker>()
             .setInputData(workDataOf("deliveryId" to deliveryId))
+            .setInitialDelay(Duration.ofMinutes(1))
             .addTag(deliveryId)
             .build()
 

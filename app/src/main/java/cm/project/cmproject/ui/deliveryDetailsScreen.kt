@@ -237,7 +237,7 @@ fun OrderDetails(
 @Composable
 private fun ScanQRButton(navController: NavController, isWithinBounds: Boolean) {
     ElevatedButton(
-        enabled = isWithinBounds,
+//        enabled = isWithinBounds,
         onClick = { navController.navigate("qrCodeScanner") }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(

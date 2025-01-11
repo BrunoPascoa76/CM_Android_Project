@@ -304,7 +304,6 @@ fun OrderMap(
 
         locationRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                Timber.e("ana sikim android")
                 val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
                 deliveryStatus?.let {
                     driverLocation = LatLng(it.latitude, it.longitude)
