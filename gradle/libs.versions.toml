@@ -7,6 +7,7 @@ cameraView = "1.4.0"
 core = "3.5.0"
 firebaseBom = "33.6.0"
 firebaseDatabaseKtx = "21.0.0"
+googleMapsServices = "0.18.0"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -25,6 +26,7 @@ navigationDynamicFeaturesFragment = "2.8.4"
 navigationFragment = "2.8.4"
 navigationTesting = "2.8.4"
 navigationUi = "2.8.4"
+okhttp = "4.12.0"
 protobufJava = "3.22.3"
 placesVersion = "3.5.0"
 vectordrawable = "1.2.0"
@@ -63,6 +65,7 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+google-maps-services = { module = "com.google.maps:google-maps-services", version.ref = "googleMapsServices" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -83,6 +86,7 @@ android-maps-utils = { module = "com.google.maps.android:android-maps-utils", ve
 google-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 places-v350 = { module = "com.google.android.libraries.places:places", version.ref = "placesVersion" }

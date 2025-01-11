@@ -99,11 +99,10 @@ dependencies {
     implementation(libs.androidx.navigation.compose.v285)
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
-    
+
 
     // Google Maps SDK for Android
     implementation(libs.places)
-    //implementation(libs.play.services.maps)
 
     implementation(libs.timber)
 
@@ -133,5 +132,8 @@ dependencies {
 
     // optional - GCMNetworkManager support
     implementation(libs.androidx.work.gcm)
+
+    implementation(libs.google.maps.services)
+    implementation(libs.okhttp)
 
 }

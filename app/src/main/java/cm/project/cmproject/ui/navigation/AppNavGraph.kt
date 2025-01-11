@@ -9,7 +9,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.models.OrderViewModel
 import cm.project.cmproject.ui.AuthTabs
 import cm.project.cmproject.ui.DeliveryDetailsScreen
 import cm.project.cmproject.ui.HomeScreen
@@ -40,7 +39,6 @@ fun AppNavHost(
     startDestination: String = "auth"
 ) {
     val userViewModel: UserViewModel = viewModel()
-    val orderViewModel: OrderViewModel = viewModel()
     val deliveryViewModel: DeliveryViewModel = viewModel()
     val mapViewModel: MapViewModel = viewModel()
     val addressViewModel: AddressViewModel = viewModel()
@@ -79,7 +77,6 @@ fun AppNavHost(
             Navbar(navController, userViewModel) {
                 deliveryHistoryViewModel.loadCurrentDeliveries(user!!.uid)
                 OrderScreen(
-                    mockViewModel = orderViewModel,
                     deliveryHistoryViewModel = deliveryHistoryViewModel,
                     navController = navController
                 )

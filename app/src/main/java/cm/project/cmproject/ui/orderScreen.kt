@@ -1,8 +1,10 @@
 package cm.project.cmproject.ui
 
+import android.Manifest
+import android.content.Context
+import android.location.Geocoder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,13 +26,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,8 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import cm.project.cmproject.R
 import cm.project.cmproject.components.DeliveryProgressBar
-import cm.project.cmproject.models.OrderState
-import cm.project.cmproject.models.OrderViewModel
+import cm.project.cmproject.utils.ManifestUtils
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -47,6 +51,8 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.DirectionsApi
+import com.google.maps.GeoApiContext
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -54,23 +60,26 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.model.TravelMode
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun OrderScreen(
-    mockViewModel: OrderViewModel = viewModel(),
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel(),
     navController: NavController = rememberNavController()
 ) {
-    val orderState by mockViewModel.orderState.collectAsState()
     val currentDeliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
     val pagerState = rememberPagerState(pageCount = { currentDeliveries.size })
     val coroutineScope = rememberCoroutineScope()
     // Request location permissions dynamically
     val locationPermissionState =
-        rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+        rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
     LaunchedEffect(Unit) {
         if (!locationPermissionState.status.isGranted) {
@@ -106,7 +115,7 @@ fun OrderScreen(
                     state = pagerState,
                     userScrollEnabled = false
                 ) { index ->
-                    orderPage(navController, orderState, deliveryHistoryViewModel, index)
+                    orderPage(navController, deliveryHistoryViewModel, index)
                 }
                 if (currentDeliveries.size > 1) {
                     //add buttons to navigate between orders
@@ -143,6 +152,7 @@ fun OrderScreen(
                         totalDots = currentDeliveries.size,
                         state = pagerState
                     )
+
 
                 }
             }
@@ -187,11 +197,23 @@ fun DotsIndicator(
 @Composable
 private fun orderPage(
     navController: NavController,
-    orderState: OrderState,
     deliveryHistoryViewModel: DeliveryHistoryViewModel,
     index: Int = 0
 ) {
-    val currentDelivery = deliveryHistoryViewModel.currentDeliveries.value.getOrNull(index)
+    val context = LocalContext.current
+    val currentDelivery = deliveryHistoryViewModel.currentDeliveries.value[index]
+    var pickupLocation by remember { mutableStateOf<LatLng?>(null) }
+    var deliveryLocation by remember { mutableStateOf<LatLng?>(null) }
+    LaunchedEffect(currentDelivery) {
+        currentDelivery.let { delivery ->
+            getLatLngFromAddress(context, delivery.fromAddress) { location ->
+                pickupLocation = location
+            }
+            getLatLngFromAddress(context, delivery.toAddress) { location ->
+                deliveryLocation = location
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -199,7 +221,7 @@ private fun orderPage(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        currentDelivery?.parcel?.label?.let {
+        currentDelivery.parcel.label.let {
             Text(
                 text = it,
                 style = MaterialTheme.typography.titleMedium
@@ -213,27 +235,27 @@ private fun orderPage(
         )
 
         // Google Map
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.8f)
-                .clip(MaterialTheme.shapes.medium)
-        ) {
-            OrderMap(
-                pickupLocation = orderState.pickupLocation,
-                currentLocation = orderState.currentLocation,
-                deliveryLocation = orderState.deliveryLocation
-            )
+        if (pickupLocation != null && deliveryLocation != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.8f)
+                    .clip(MaterialTheme.shapes.medium)
+            ) {
+                OrderMap(
+                    pickupLocation = pickupLocation!!,
+                    deliveryLocation = deliveryLocation!!,
+                    context = context
+                )
+            }
         }
 
-        //TODO: hide this if not a driver or if there's no delivery
         ElevatedButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 10.dp),
-            enabled = currentDelivery != null,
             onClick = {
-                navController.navigate("deliveryDetails/${currentDelivery?.deliveryId}")
+                navController.navigate("deliveryDetails/${currentDelivery.deliveryId}")
             }) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -251,52 +273,141 @@ private fun orderPage(
 
 @Composable
 fun OrderMap(
+    context: Context,
     pickupLocation: LatLng,
-    currentLocation: LatLng,
-    deliveryLocation: LatLng
+    deliveryLocation: LatLng,
+    currentLocation: LatLng = LatLng(40.6405, -8.6538)
 ) {
+    var isLoading by remember { mutableStateOf(true) }
+    var routePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 8f) // Center closer to Aveiro
+        position = CameraPosition.fromLatLngZoom(currentLocation, 8f)
+    }
+
+    LaunchedEffect(pickupLocation, currentLocation, deliveryLocation) {
+        withContext(Dispatchers.IO) {
+            var geoContext: GeoApiContext? = null
+            try {
+                isLoading = true
+                val apiKey = ManifestUtils.getApiKeyFromManifest(context)
+                geoContext = GeoApiContext.Builder()
+                    .apiKey(apiKey)
+                    .connectTimeout(2, TimeUnit.SECONDS)
+                    .readTimeout(2, TimeUnit.SECONDS)
+                    .writeTimeout(2, TimeUnit.SECONDS)
+                    .build()
+
+                val points = mutableListOf<LatLng>()
+
+                // First leg: Pickup to Current
+                val firstLegResult = DirectionsApi.newRequest(geoContext)
+                    .origin(
+                        com.google.maps.model.LatLng(
+                            pickupLocation.latitude,
+                            pickupLocation.longitude
+                        )
+                    )
+                    .destination(
+                        com.google.maps.model.LatLng(
+                            currentLocation.latitude,
+                            currentLocation.longitude
+                        )
+                    )
+                    .mode(TravelMode.DRIVING)
+                    .await()
+
+                firstLegResult.routes.firstOrNull()?.legs?.forEach { leg ->
+                    leg.steps.forEach { step ->
+                        points.addAll(step.polyline.decodePath().map {
+                            LatLng(it.lat, it.lng)
+                        })
+                    }
+                }
+
+                // Second leg: Current to Delivery
+                val secondLegResult = DirectionsApi.newRequest(geoContext)
+                    .origin(
+                        com.google.maps.model.LatLng(
+                            currentLocation.latitude,
+                            currentLocation.longitude
+                        )
+                    )
+                    .destination(
+                        com.google.maps.model.LatLng(
+                            deliveryLocation.latitude,
+                            deliveryLocation.longitude
+                        )
+                    )
+                    .mode(TravelMode.DRIVING)
+                    .await()
+
+                secondLegResult.routes.firstOrNull()?.legs?.forEach { leg ->
+                    leg.steps.forEach { step ->
+                        points.addAll(step.polyline.decodePath().map {
+                            LatLng(it.lat, it.lng)
+                        })
+                    }
+                }
+
+                routePoints = points
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                isLoading = false
+                geoContext?.shutdown()
+            }
+        }
     }
 
     GoogleMap(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures { /* Consume touch events and stay in map area */ }
-            },
+        modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
         properties = MapProperties(isMyLocationEnabled = false),
         uiSettings = MapUiSettings(zoomControlsEnabled = true)
     ) {
-        // Pickup Marker
+        // Markers and Polyline remain the same
         Marker(
             state = MarkerState(position = pickupLocation),
             title = "Pickup Location",
-            snippet = "Order starts here.",
+            snippet = "Order starts here",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
         )
 
-        // Current Location Marker
         Marker(
             state = MarkerState(position = currentLocation),
             title = "Current Location",
-            snippet = "Driver's current position.",
+            snippet = "Driver's current position",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
         )
 
-        // Delivery Marker
         Marker(
             state = MarkerState(position = deliveryLocation),
             title = "Delivery Location",
-            snippet = "Order will be delivered here.",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+            snippet = "Order will be delivered here",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         )
 
-        // Route Polyline
-        Polyline(
-            points = listOf(pickupLocation, currentLocation, deliveryLocation),
-            color = Color.Black
-        )
+        if (routePoints.isNotEmpty()) {
+            Polyline(
+                points = routePoints,
+                color = Color.Blue,
+                width = 8f
+            )
+        }
+    }
+}
+
+
+fun getLatLngFromAddress(
+    context: Context,
+    address: String,
+    onResult: (LatLng?) -> Unit
+) {
+    val geocoder = Geocoder(context, Locale.getDefault())
+    geocoder.getFromLocationName(address, 1) { addresses ->
+        val location = if (addresses.isNotEmpty()) {
+            LatLng(addresses[0].latitude, addresses[0].longitude)
+        } else null
+        onResult(location)
     }
 }
