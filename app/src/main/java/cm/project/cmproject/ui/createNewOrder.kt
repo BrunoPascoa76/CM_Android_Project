@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,6 +91,8 @@ fun NewOrderScreen(
     var length: String by remember { mutableStateOf("") }
     var width: String by remember { mutableStateOf("") }
     var height: String by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
 
     LaunchedEffect(Unit){
         deliveryViewModel.updateFromAddress(user!!.address.address) //while the user can always choose a different address if they want, it uses the account's address as a default
@@ -340,6 +343,8 @@ fun NewOrderScreen(
                     length = length,
                     width = width,
                     height = height,
+
+                    context = context
                 )
                 navController.navigate("home") // Navigate to the home screen
             },
