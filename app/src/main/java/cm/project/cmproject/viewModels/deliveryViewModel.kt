@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +57,9 @@ class DeliveryViewModel : ViewModel() {
 
     private val _currentLocation = MutableStateFlow<LatLng?>(null)
     val currentLocation = _currentLocation.asStateFlow()
+
+    private var _deliveryStatusRef: DatabaseReference? = null
+    private var _listener: ValueEventListener? = null
 
     fun fetchDelivery(deliveryId: String) {
         _errorMessage.value = null
@@ -312,11 +316,13 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun listenForDeliveryStatusUpdates() {
+        detachListener()
+
         val database =
             FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
-        val deliveryStatusRef = database.getReference("deliveryStatus/${_state.value?.deliveryId}")
+        _deliveryStatusRef = database.getReference("deliveryStatus/${_state.value?.deliveryId}")
 
-        deliveryStatusRef.addValueEventListener(object : ValueEventListener {
+        _listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
                 deliveryStatus?.let {
@@ -327,7 +333,12 @@ class DeliveryViewModel : ViewModel() {
             override fun onCancelled(error: DatabaseError) {
                 // Handle possible errors.
             }
-        })
+        }
+        _deliveryStatusRef!!.addValueEventListener(_listener!!)
+    }
+
+    fun detachListener() {
+        _listener?.let { _deliveryStatusRef?.removeEventListener(it) }
     }
 
     fun updateDeliveryStatus(deliveryStatus: DeliveryStatus) {
