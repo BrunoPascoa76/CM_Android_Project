@@ -32,28 +32,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
-import cm.project.cmproject.viewModels.RealtimeLocationViewModel
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun DeliveryProgressBar(
     modifier: Modifier = Modifier,
-    realtimeLocationViewModel: RealtimeLocationViewModel = viewModel(),
     deliveryViewModel: DeliveryViewModel = viewModel()
 ) {
 
     val delivery by deliveryViewModel.state.collectAsState()
+    val driverLocation by deliveryViewModel.currentLocation.collectAsState()
 
     LaunchedEffect(delivery?.deliveryId) {
         if (delivery?.deliveryId != null) {
-            realtimeLocationViewModel.attachListener(delivery!!.deliveryId)
+            deliveryViewModel.listenForDeliveryStatusUpdates()
         }
     }
-    DeliveryProgressBarComponent(delivery, realtimeLocationViewModel, modifier)
+
+    DeliveryProgressBarComponent(delivery, driverLocation, modifier)
 
     DisposableEffect(Unit) {
         onDispose {
-            realtimeLocationViewModel.detachListener()
+            deliveryViewModel.detachListener()
         }
     }
 }
@@ -61,10 +61,9 @@ fun DeliveryProgressBar(
 @Composable
 private fun DeliveryProgressBarComponent(
     delivery: Delivery?,
-    realTimeDeliveryViewModel: RealtimeLocationViewModel,
+    driverLocation: LatLng?,
     modifier: Modifier = Modifier
 ) {
-    val driverLocation by realTimeDeliveryViewModel.driverLocation.collectAsState()
 
     if (delivery != null) {
         val completedSteps = delivery.completedSteps
@@ -102,13 +101,14 @@ private fun DeliveryProgressBarComponent(
 fun DeliveryProgressBar(
     modifier: Modifier = Modifier,
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel(),
-    realtimeLocationViewModel: RealtimeLocationViewModel = viewModel(),
     index: Int = 0
 ) {
     val deliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
+    val driverLocation by deliveryHistoryViewModel.currentLocation.collectAsState()
+
     val delivery = deliveries.getOrNull(index)
 
-    DeliveryProgressBarComponent(delivery, realtimeLocationViewModel, modifier)
+    DeliveryProgressBarComponent(delivery, driverLocation, modifier)
 }
 
 @Composable
