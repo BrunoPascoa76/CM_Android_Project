@@ -74,7 +74,7 @@ class MapViewModel : ViewModel() {
         }
     }
 
-    fun updateSelectedLocationAddress(latitude: Double, longitude: Double) {
+    fun updateSelectedLocation(latitude: Double, longitude: Double) {
         _selectedLocation.value = LatLng(latitude, longitude)
     }
 
