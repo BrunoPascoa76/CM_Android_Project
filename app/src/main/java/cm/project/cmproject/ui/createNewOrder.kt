@@ -94,21 +94,24 @@ fun NewOrderScreen(
 
     val context = LocalContext.current
 
-    LaunchedEffect(Unit){
+    validFieldsUniversal[0]=fromAddress.isNotEmpty() && toAddress.isNotEmpty()
+
+    LaunchedEffect(Unit) {
         deliveryViewModel.updateFromAddress(user!!.address.address) //while the user can always choose a different address if they want, it uses the account's address as a default
     }
 
     LaunchedEffect(recipientEmail) {
         if (recipientEmail.contains("@")) { //don't need to search unless email is valid
-            when(val result = UserRepository().getUserByEmail(recipientEmail)){
+            when (val result = UserRepository().getUserByEmail(recipientEmail)) {
                 is Result.Success -> {
-                    recipientId=result.data!!.uid
-                    validFieldsUniversal[1]=true
-                    if(toAddress.isEmpty() && result.data.address.address.isNotEmpty()){ //if the user hasn't specified a to address yet, use the recipient's registered address
+                    recipientId = result.data!!.uid
+                    validFieldsUniversal[1] = true
+                    if (toAddress.isEmpty() && result.data.address.address.isNotEmpty()) { //if the user hasn't specified a to address yet, use the recipient's registered address
                         deliveryViewModel.updateToAddress(result.data.address.address)
-                        validFieldsUniversal[0]=fromAddress.isNotEmpty()
+                        validFieldsUniversal[0] = fromAddress.isNotEmpty()
                     }
                 }
+
                 is Result.Error -> {}
             }
         }
@@ -237,7 +240,8 @@ fun NewOrderScreen(
                     label = { Text("Recipient Email") },
                     value = recipientEmail, // Display the recipient's email
                     onValueChange = {
-                        recipientEmail = it; validFieldsUniversal[1] = false //for safety's sake, keep it false until we have finished verifying the email
+                        recipientEmail = it; validFieldsUniversal[1] =
+                        false //for safety's sake, keep it false until we have finished verifying the email
                     }
                 )
                 InvalidFieldsMessage(
