@@ -293,7 +293,7 @@ fun OrderMap(
     var driverToPickupPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var pickupToDeliveryPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 8f)
+        position = CameraPosition.fromLatLngZoom(driverLocation, 8f)
     }
 
     // Listen for real-time location updates
@@ -317,7 +317,7 @@ fun OrderMap(
     }
 
     // Calculate route when driver location changes
-    LaunchedEffect(pickupLocation, currentLocation, deliveryLocation) {
+    LaunchedEffect(pickupLocation, driverLocation, deliveryLocation) {
         scope.launch {
             try {
                 val apiKey = ManifestUtils.getApiKeyFromManifest(context)
@@ -332,8 +332,8 @@ fun OrderMap(
                 val firstLegResult = DirectionsApi.newRequest(geoContext)
                     .origin(
                         com.google.maps.model.LatLng(
-                            currentLocation.latitude,
-                            currentLocation.longitude
+                            driverLocation.latitude,
+                            driverLocation.longitude
                         )
                     )
                     .destination(
@@ -395,7 +395,7 @@ fun OrderMap(
         )
 
         Marker(
-            state = MarkerState(position = currentLocation),
+            state = MarkerState(position = driverLocation),
             title = "Current Location",
             snippet = "Driver's current position",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
