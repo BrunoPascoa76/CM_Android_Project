@@ -40,7 +40,7 @@ class LocationWorker(
         val workManager = WorkManager.getInstance(context)
         val locationWorkRequest = OneTimeWorkRequestBuilder<LocationWorker>()
             .setInputData(workDataOf("deliveryId" to deliveryId))
-            .setInitialDelay(Duration.ofMinutes(1))
+            .setInitialDelay(Duration.ofSeconds(5))
             .addTag(deliveryId)
             .build()
 

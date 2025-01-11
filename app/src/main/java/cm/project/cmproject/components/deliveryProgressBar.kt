@@ -109,6 +109,7 @@ private fun DeliveryProgressBarComponent(
 fun DeliveryProgressBar(
     modifier: Modifier = Modifier,
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel(),
+    driverLocation: LatLng? = null,
     index: Int = 0
 ) {
     val deliveries by deliveryHistoryViewModel.currentDeliveries.collectAsState()
@@ -116,8 +117,6 @@ fun DeliveryProgressBar(
     //need to do this to not have to replicate everything
     val deliveryViewModel: DeliveryViewModel = viewModel()
     deliveryViewModel.fetchDelivery(deliveries[index].deliveryId)
-
-    val driverLocation by deliveryViewModel.currentLocation.collectAsState()
 
     LaunchedEffect(deliveries[index].deliveryId) {
         deliveryViewModel.listenForDeliveryStatusUpdates()
@@ -171,21 +170,21 @@ fun ProgressBar(
     }
 }
 
-fun calculateProgress(driverLocation: LatLng?, delivery: Delivery): Int {
+fun calculateProgress(driverLocation: LatLng?, delivery: Delivery): Float {
     // lack of data
-    if (driverLocation == null) return 0
-    if (delivery.steps.isEmpty()) return 0
+    if (driverLocation == null) return 0f
+    if (delivery.steps.isEmpty()) return 0f
 
     //at the edges
-    if (delivery.completedSteps == 0) return 0
-    if (delivery.completedSteps == delivery.steps.size) return 100
+    if (delivery.completedSteps == 0) return 0f
+    if (delivery.completedSteps == delivery.steps.size) return 100f
 
-    val lastStep = delivery.steps.getOrNull(delivery.completedSteps - 1) ?: return 0
-    val currentStep = delivery.steps.getOrNull(delivery.completedSteps) ?: return 0
+    val lastStep = delivery.steps.getOrNull(delivery.completedSteps - 1) ?: return 0f
+    val currentStep = delivery.steps.getOrNull(delivery.completedSteps) ?: return 0f
 
 
     //one of the steps has unset location (it's not null, but it should be treated as if it is)
-    if (lastStep.location.address == "" || currentStep.location.address == "") return 0
+    if (lastStep.location.address == "" || currentStep.location.address == "") return 0f
 
     val previousLocation = Location("previousLocation")
     previousLocation.latitude = lastStep.location.latitude
@@ -202,7 +201,7 @@ fun calculateProgress(driverLocation: LatLng?, delivery: Delivery): Int {
     val totalDistance = previousLocation.distanceTo(nextLocation)
     val currentDistance = currentLocation.distanceTo(nextLocation)
 
-    if (totalDistance == 0f) return 0 //avoid division by zero
+    if (totalDistance == 0f) return 0f //avoid division by zero
 
-    return (((totalDistance - currentDistance) / totalDistance) * 100).toInt()
+    return (totalDistance - currentDistance) / totalDistance
 }

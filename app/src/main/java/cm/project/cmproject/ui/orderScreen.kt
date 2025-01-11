@@ -209,6 +209,8 @@ private fun orderPage(
     var pickupLocation by remember { mutableStateOf<LatLng?>(null) }
     var deliveryLocation by remember { mutableStateOf<LatLng?>(null) }
     var deliveryId by remember { mutableStateOf<String?>(null) }
+    var deliveryStatus by remember { mutableStateOf<String?>(null) }
+    var driverLocation by remember { mutableStateOf<LatLng?>(null) }
 
     LaunchedEffect(currentDelivery) {
         currentDelivery.let { delivery ->
@@ -219,7 +221,28 @@ private fun orderPage(
                 deliveryLocation = location
             }
             deliveryId = delivery.deliveryId
+            deliveryStatus = delivery.status
+
+            // Listen for real-time location updates
+            val database =
+                FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
+            val locationRef = database.getReference("deliveryStatus").child(delivery.deliveryId)
+
+            locationRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val deliveryRealtimeStatus = snapshot.getValue(DeliveryStatus::class.java)
+                    deliveryRealtimeStatus?.let {
+                        driverLocation = LatLng(it.latitude, it.longitude)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Timber.e("Location updates cancelled: ${error.message}")
+                }
+            })
         }
+
+
     }
 
 
@@ -238,6 +261,7 @@ private fun orderPage(
 
         DeliveryProgressBar(
             modifier = Modifier.padding(bottom = 20.dp),
+            driverLocation = driverLocation,
             deliveryHistoryViewModel = deliveryHistoryViewModel,
             index = index
         )
@@ -251,9 +275,10 @@ private fun orderPage(
                     .clip(MaterialTheme.shapes.medium)
             ) {
                 OrderMap(
-                    deliveryId = deliveryId!!,
                     pickupLocation = pickupLocation!!,
                     deliveryLocation = deliveryLocation!!,
+                    deliveryStatus = deliveryStatus!!,
+                    driverLocation = driverLocation,
                     context = context
                 )
             }
@@ -283,37 +308,17 @@ private fun orderPage(
 @Composable
 fun OrderMap(
     context: Context,
-    deliveryId: String,
+    deliveryStatus: String,
     pickupLocation: LatLng,
     deliveryLocation: LatLng,
-    currentLocation: LatLng = LatLng(40.6405, -8.6538),
+    driverLocation: LatLng? = null,
 ) {
     val scope = rememberCoroutineScope()
-    var driverLocation by remember { mutableStateOf(currentLocation) }
     var driverToPickupPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var pickupToDeliveryPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(driverLocation, 8f)
-    }
-
-    // Listen for real-time location updates
-    LaunchedEffect(deliveryId) {
-        val database =
-            FirebaseDatabase.getInstance("https://cm-android-2024-default-rtdb.europe-west1.firebasedatabase.app/")
-        val locationRef = database.getReference("deliveryStatus").child(deliveryId)
-
-        locationRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val deliveryStatus = snapshot.getValue(DeliveryStatus::class.java)
-                deliveryStatus?.let {
-                    driverLocation = LatLng(it.latitude, it.longitude)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Timber.e("Location updates cancelled: ${error.message}")
-            }
-        })
+        position = (driverLocation?.let { CameraPosition.fromLatLngZoom(it, 8f) }
+            ?: CameraPosition.fromLatLngZoom(pickupLocation, 8f))
     }
 
     // Calculate route when driver location changes
@@ -328,53 +333,60 @@ fun OrderMap(
                     .writeTimeout(2, TimeUnit.SECONDS)
                     .build()
 
-                // First leg: Current to Pickup
-                val firstLegResult = DirectionsApi.newRequest(geoContext)
-                    .origin(
-                        com.google.maps.model.LatLng(
-                            driverLocation.latitude,
-                            driverLocation.longitude
-                        )
-                    )
-                    .destination(
-                        com.google.maps.model.LatLng(
-                            pickupLocation.latitude,
-                            pickupLocation.longitude
-                        )
-                    )
-                    .mode(TravelMode.DRIVING)
-                    .await()
+                driverLocation?.let {
+                    cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 10f)
+                }
+                if (deliveryStatus == "Pickup") {
+                    driverLocation?.let {
+                        // First leg: Current to Pickup
+                        val firstLegResult = DirectionsApi.newRequest(geoContext)
+                            .origin(
+                                com.google.maps.model.LatLng(
+                                    it.latitude,
+                                    it.longitude
+                                )
+                            )
+                            .destination(
+                                com.google.maps.model.LatLng(
+                                    pickupLocation.latitude,
+                                    pickupLocation.longitude
+                                )
+                            )
+                            .mode(TravelMode.DRIVING)
+                            .await()
 
-                // Second leg: Pickup to Delivery
-                val secondLegResult = DirectionsApi.newRequest(geoContext)
-                    .origin(
-                        com.google.maps.model.LatLng(
-                            pickupLocation.latitude,
-                            pickupLocation.longitude
-                        )
-                    )
-                    .destination(
-                        com.google.maps.model.LatLng(
-                            deliveryLocation.latitude,
-                            deliveryLocation.longitude
-                        )
-                    )
-                    .mode(TravelMode.DRIVING)
-                    .await()
-
-                driverToPickupPoints = firstLegResult.routes.firstOrNull()?.legs?.flatMap { leg ->
-                    leg.steps.flatMap { step ->
-                        step.polyline.decodePath().map { LatLng(it.lat, it.lng) }
+                        driverToPickupPoints =
+                            firstLegResult.routes.firstOrNull()?.legs?.flatMap { leg ->
+                                leg.steps.flatMap { step ->
+                                    step.polyline.decodePath().map { LatLng(it.lat, it.lng) }
+                                }
+                            } ?: emptyList()
                     }
-                } ?: emptyList()
+                } else if (deliveryStatus != "Delivered") {
+                    // Second leg: Pickup to Delivery
+                    val secondLegResult = DirectionsApi.newRequest(geoContext)
+                        .origin(
+                            com.google.maps.model.LatLng(
+                                pickupLocation.latitude,
+                                pickupLocation.longitude
+                            )
+                        )
+                        .destination(
+                            com.google.maps.model.LatLng(
+                                deliveryLocation.latitude,
+                                deliveryLocation.longitude
+                            )
+                        )
+                        .mode(TravelMode.DRIVING)
+                        .await()
 
-                pickupToDeliveryPoints =
-                    secondLegResult.routes.firstOrNull()?.legs?.flatMap { leg ->
-                        leg.steps.flatMap { step ->
-                            step.polyline.decodePath().map { LatLng(it.lat, it.lng) }
-                        }
-                    } ?: emptyList()
-
+                    pickupToDeliveryPoints =
+                        secondLegResult.routes.firstOrNull()?.legs?.flatMap { leg ->
+                            leg.steps.flatMap { step ->
+                                step.polyline.decodePath().map { LatLng(it.lat, it.lng) }
+                            }
+                        } ?: emptyList()
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -390,34 +402,36 @@ fun OrderMap(
         Marker(
             state = MarkerState(position = pickupLocation),
             title = "Pickup Location",
-            snippet = "Order starts here",
+            snippet = "Parcel picked up from here",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
         )
 
-        Marker(
-            state = MarkerState(position = driverLocation),
-            title = "Current Location",
-            snippet = "Driver's current position",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-        )
+        driverLocation?.let {
+            Marker(
+                state = MarkerState(position = it),
+                title = "Current Location",
+                snippet = "Driver's current position",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+            )
+        }
 
         Marker(
             state = MarkerState(position = deliveryLocation),
             title = "Delivery Location",
-            snippet = "Final destination",
+            snippet = "Final destination of the parcel",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         )
 
-        // Driver to Pickup route (Blue)
+        // Driver to Pickup route
         if (driverToPickupPoints.isNotEmpty()) {
             Polyline(
                 points = driverToPickupPoints,
-                color = Color.Blue,
+                color = Color.Cyan,
                 width = 8f
             )
         }
 
-        // Pickup to Delivery route (Red)
+        // Pickup to Delivery route
         if (pickupToDeliveryPoints.isNotEmpty()) {
             Polyline(
                 points = pickupToDeliveryPoints,

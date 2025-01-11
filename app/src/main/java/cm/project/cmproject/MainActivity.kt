@@ -22,6 +22,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import java.time.Duration
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("StateFlowValueCalledInComposition", "CoroutineCreationDuringComposition")
@@ -80,6 +81,7 @@ class MainActivity : ComponentActivity() {
 fun scheduleLocationUpdates(deliveryId: String, context: Context) {
     val workManager = WorkManager.getInstance(context)
     val workRequest = OneTimeWorkRequestBuilder<LocationWorker>()
+        .setInitialDelay(Duration.ofSeconds(5))
         .setInputData(workDataOf("deliveryId" to deliveryId))
         .build()
 
