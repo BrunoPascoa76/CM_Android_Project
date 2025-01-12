@@ -1,6 +1,11 @@
 package cm.project.cmproject.components
 
 import android.location.Location
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -26,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -97,7 +103,11 @@ private fun DeliveryProgressBarComponent(
                     if (i < steps.size - 1) {
                         val barProgress =
                             (if (i < completedSteps - 1) 1f else (if (i == completedSteps - 1) progress else 0f)).toFloat()
-                        ProgressBar(progress = barProgress)
+                        if (i == completedSteps - 1) {
+                            ProgressBar(progress = 1f, animate = true)
+                        } else {
+                            ProgressBar(progress = barProgress)
+                        }
                     }
                 }
             }
@@ -157,18 +167,50 @@ fun StepCircle(
 @Composable
 fun ProgressBar(
     progress: Float,
-    modifier: Modifier = Modifier
+    animate: Boolean = false,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary
 ) {
     Box(modifier = Modifier.padding(top = 15.dp, start = 4.dp, end = 2.dp)) {
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = modifier
-                .height(10.dp)
-                .clip(RoundedCornerShape(2.dp)),
-            color = MaterialTheme.colorScheme.primary,
-        )
+        if (animate) {
+            AnimatedLoadingIndicator(modifier = modifier, color = color)
+        } else {
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = modifier
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(2.dp)),
+                color = color,
+            )
+        }
     }
 }
+
+@Composable
+fun AnimatedLoadingIndicator(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+    val animatedProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    LinearProgressIndicator(
+        progress = { animatedProgress },
+        modifier = modifier
+            .height(10.dp)
+            .clip(RoundedCornerShape(2.dp)),
+        color = color
+    )
+}
+
 
 fun calculateProgress(driverLocation: LatLng?, delivery: Delivery): Float {
     // lack of data
@@ -181,7 +223,6 @@ fun calculateProgress(driverLocation: LatLng?, delivery: Delivery): Float {
 
     val lastStep = delivery.steps.getOrNull(delivery.completedSteps - 1) ?: return 0f
     val currentStep = delivery.steps.getOrNull(delivery.completedSteps) ?: return 0f
-
 
     //one of the steps has unset location (it's not null, but it should be treated as if it is)
     if (lastStep.location.address == "" || currentStep.location.address == "") return 0f
