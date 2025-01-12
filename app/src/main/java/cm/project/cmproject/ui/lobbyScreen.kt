@@ -70,7 +70,7 @@ fun LobbyScreen(
 
     LaunchedEffect(acceptedDelivery) {
         if (acceptedDelivery) {
-            navController.navigate("order")
+            navController.navigate("track")
         }
     }
 

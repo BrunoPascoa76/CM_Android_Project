@@ -45,12 +45,12 @@ fun Navbar(
                     icon = {
                         Icon(
                             imageVector = Icons.Filled.LocationOn,
-                            contentDescription = "order"
+                            contentDescription = "track"
                         )
                     },
-                    label = { Text("Order") },
-                    selected = currentRoute == "order",
-                    onClick = { navController.navigate("order") }
+                    label = { Text("Track") },
+                    selected = currentRoute == "track",
+                    onClick = { navController.navigate("track") }
                 )
 
                 if (user?.role == "driver") { //hides to customers

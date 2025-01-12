@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -74,7 +75,7 @@ import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun OrderScreen(
+fun TrackingScreen(
     deliveryHistoryViewModel: DeliveryHistoryViewModel = viewModel(),
     navController: NavController = rememberNavController()
 ) {
@@ -109,7 +110,7 @@ fun OrderScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Track your orders",
+                        text = "Track your deliveries",
                         style = MaterialTheme.typography.titleLarge
                     )
                 }
@@ -126,29 +127,31 @@ fun OrderScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 10.dp),
+                            .padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
                         if (pagerState.currentPage > 0) {
                             ElevatedButton(
+                                modifier = Modifier.size(100.dp, 35.dp),
                                 onClick = {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(pagerState.currentPage - 1)
                                     }
                                 }
                             ) {
-                                Text("Previous")
+                                Text("Previous", fontSize = 12.sp)
                             }
                         }
                         if (pagerState.currentPage < currentDeliveries.size - 1) {
                             ElevatedButton(
+                                modifier = Modifier.size(80.dp, 35.dp),
                                 onClick = {
                                     coroutineScope.launch {
                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                     }
                                 }
                             ) {
-                                Text("Next")
+                                Text("Next", fontSize = 12.sp)
                             }
                         }
                     }
@@ -156,8 +159,6 @@ fun OrderScreen(
                         totalDots = currentDeliveries.size,
                         state = pagerState
                     )
-
-
                 }
             }
         }
@@ -178,7 +179,7 @@ fun DotsIndicator(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp),
+            .padding(bottom = 12.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -317,8 +318,8 @@ fun OrderMap(
     var driverToPickupPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     var pickupToDeliveryPoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val cameraPositionState = rememberCameraPositionState {
-        position = (driverLocation?.let { CameraPosition.fromLatLngZoom(it, 8f) }
-            ?: CameraPosition.fromLatLngZoom(pickupLocation, 8f))
+        position = (driverLocation?.let { CameraPosition.fromLatLngZoom(it, 7.5f) }
+            ?: CameraPosition.fromLatLngZoom(pickupLocation, 7.5f))
     }
 
     // Calculate route when driver location changes
@@ -334,7 +335,7 @@ fun OrderMap(
                     .build()
 
                 driverLocation?.let {
-                    cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 10f)
+                    cameraPositionState.position = CameraPosition.fromLatLngZoom(it, 7.5f)
                 }
                 if (deliveryStatus == "Pickup") {
                     driverLocation?.let {
@@ -402,7 +403,7 @@ fun OrderMap(
         Marker(
             state = MarkerState(position = pickupLocation),
             title = "Pickup Location",
-            snippet = "Parcel picked up from here",
+            snippet = "Delivery picked up from here",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
         )
 
@@ -418,7 +419,7 @@ fun OrderMap(
         Marker(
             state = MarkerState(position = deliveryLocation),
             title = "Delivery Location",
-            snippet = "Final destination of the parcel",
+            snippet = "Final destination of the delivery",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         )
 

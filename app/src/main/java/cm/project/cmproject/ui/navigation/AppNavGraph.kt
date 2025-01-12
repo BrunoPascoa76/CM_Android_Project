@@ -16,10 +16,10 @@ import cm.project.cmproject.ui.LobbyScreen
 import cm.project.cmproject.ui.MapScreen
 import cm.project.cmproject.ui.Navbar
 import cm.project.cmproject.ui.NewOrderScreen
-import cm.project.cmproject.ui.OrderScreen
 import cm.project.cmproject.ui.ProfileScreen
 import cm.project.cmproject.ui.QrCodeScannerScreen
 import cm.project.cmproject.ui.StepCreationScreen
+import cm.project.cmproject.ui.TrackingScreen
 import cm.project.cmproject.viewModels.AddressViewModel
 import cm.project.cmproject.viewModels.DeliveryHistoryViewModel
 import cm.project.cmproject.viewModels.DeliveryViewModel
@@ -70,12 +70,12 @@ fun AppNavHost(
                 )
             }
         }
-        composable("order") {
+        composable("track") {
             val user by userViewModel.state.collectAsState()
             if (user == null) navController.navigate("auth")
             Navbar(navController, userViewModel) {
                 deliveryHistoryViewModel.loadCurrentDeliveries(user!!.uid)
-                OrderScreen(
+                TrackingScreen(
                     deliveryHistoryViewModel = deliveryHistoryViewModel,
                     navController = navController
                 )

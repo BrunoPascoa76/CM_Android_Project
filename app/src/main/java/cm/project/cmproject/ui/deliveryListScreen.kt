@@ -1,16 +1,9 @@
 package cm.project.cmproject.ui
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,8 +19,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -45,24 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import cm.project.cmproject.ui.theme.CMProjectTheme
 import cm.project.cmproject.ui.theme.PlaceAnOrderScreenTheme
 
-/*
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            CMProjectTheme {
-                OrdersListScreen()
-            }
-        }
-    }
-}
-*/
-
 @Composable
-fun OrdersListScreen(modifier: Modifier = Modifier, navController: NavController = rememberNavController()) {
+fun DeliveryListScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController = rememberNavController()
+) {
     var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
     if (shouldShowOnboarding) {
@@ -72,17 +52,18 @@ fun OrdersListScreen(modifier: Modifier = Modifier, navController: NavController
             )
             Greetings()
         }
-    }else{
+    } else {
         Greetings()
     }
 }
 
 @Composable
-fun Greetings(modifier: Modifier = Modifier, names: List<String> = List (1000){"$it"}) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)){
+fun Greetings(modifier: Modifier = Modifier, names: List<String> = List(1000) { "$it" }) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
         LazyColumn {
             items(names) { name ->
-                Greeting(name = name) }
+                Greeting(name = name)
+            }
         }
     }
 }
@@ -91,13 +72,23 @@ fun Greetings(modifier: Modifier = Modifier, names: List<String> = List (1000){"
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     val expanded = remember { mutableStateOf(false) }
 
-    ElevatedButton(modifier = Modifier.padding(12.dp).fillMaxWidth(), onClick = {expanded.value = !expanded.value}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary), contentPadding = PaddingValues(vertical = 15.dp, horizontal = 100.dp)) {
+    ElevatedButton(
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth(),
+        onClick = { expanded.value = !expanded.value },
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+        contentPadding = PaddingValues(vertical = 15.dp, horizontal = 100.dp)
+    ) {
         Text(text = "Order n.º $name")
     }
 }
 
 @Composable
-fun OnboardingScreen(modifier: Modifier = Modifier, navController: NavController = rememberNavController()/*, onSearch: (String) -> Unit*/) {
+fun OnboardingScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController = rememberNavController()/*, onSearch: (String) -> Unit*/
+) {
     var text by rememberSaveable { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -111,7 +102,7 @@ fun OnboardingScreen(modifier: Modifier = Modifier, navController: NavController
         Button(
             modifier = Modifier.padding(vertical = 24.dp),
             onClick = {
-                navController.navigate("order")
+                navController.navigate("track")
             }
         ) {
             Text("Create New Order")
@@ -133,9 +124,9 @@ fun OnboardingScreen(modifier: Modifier = Modifier, navController: NavController
 
             })
         )
-        Box (modifier = Modifier.padding(vertical = 24.dp)){
-            Column (horizontalAlignment = Alignment.CenterHorizontally){
-                Text("My Orders")
+        Box(modifier = Modifier.padding(vertical = 24.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("My Deliveries")
                 Greetings()
             }
         }
@@ -156,6 +147,6 @@ fun OnboardingPreview() {
 @Composable
 fun GreetingPreview() {
     PlaceAnOrderScreenTheme {
-        OrdersListScreen()
+        DeliveryListScreen()
     }
 }
