@@ -12,3 +12,10 @@ data class Delivery(
     val fromAddress: String = "",
     val toAddress: String = "",
 )
+
+data class DeliveryStatus(
+    val status: String = "",
+    val timestamp: Long = 0L,
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0
+)

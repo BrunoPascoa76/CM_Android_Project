@@ -8,7 +8,6 @@ import cm.project.cmproject.models.Address
 import cm.project.cmproject.models.Delivery
 import cm.project.cmproject.models.DeliveryStatus
 import cm.project.cmproject.models.Dimensions
-import cm.project.cmproject.models.OrderStatus
 import cm.project.cmproject.models.Parcel
 import cm.project.cmproject.models.Step
 import cm.project.cmproject.models.User
@@ -342,19 +341,19 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun updateDeliveryStatus(deliveryStatus: DeliveryStatus) {
-        val newStatus = mapDeliveryStatusToOrderStatus(deliveryStatus)
+//        val newStatus = mapDeliveryStatusToOrderStatus(deliveryStatus)
         val newLocation = LatLng(deliveryStatus.latitude, deliveryStatus.longitude)
         _currentLocation.value = newLocation
     }
 
-    private fun mapDeliveryStatusToOrderStatus(deliveryStatus: DeliveryStatus): OrderStatus {
-        return when (deliveryStatus.status) {
-            "DRIVER_ASSIGNED" -> OrderStatus.DRIVER_ASSIGNED
-            "PICKUP" -> OrderStatus.PICKUP
-            "IN_TRANSIT" -> OrderStatus.IN_TRANSIT
-            "DELIVERED" -> OrderStatus.DELIVERED
-            else -> OrderStatus.IN_TRANSIT
-        }
-    }
+//    private fun mapDeliveryStatusToOrderStatus(deliveryStatus: DeliveryStatus): OrderStatus {
+//        return when (deliveryStatus.status) {
+//            "DRIVER_ASSIGNED" -> OrderStatus.DRIVER_ASSIGNED
+//            "PICKUP" -> OrderStatus.PICKUP
+//            "IN_TRANSIT" -> OrderStatus.IN_TRANSIT
+//            "DELIVERED" -> OrderStatus.DELIVERED
+//            else -> OrderStatus.IN_TRANSIT
+//        }
+//    }
 
 }

@@ -1,7 +1,7 @@
 package cm.project.cmproject.components
 
 import android.location.Location
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -178,7 +178,7 @@ fun ProgressBar(
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = modifier
-                    .height(10.dp)
+                    .height(7.dp)
                     .clip(RoundedCornerShape(2.dp)),
                 color = color,
             )
@@ -194,9 +194,9 @@ fun AnimatedLoadingIndicator(
     val infiniteTransition = rememberInfiniteTransition(label = "")
     val animatedProgress by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 1f,
+        targetValue = 0.7f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
+            animation = tween(3500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = ""
@@ -205,7 +205,7 @@ fun AnimatedLoadingIndicator(
     LinearProgressIndicator(
         progress = { animatedProgress },
         modifier = modifier
-            .height(10.dp)
+            .height(7.dp)
             .clip(RoundedCornerShape(2.dp)),
         color = color
     )
