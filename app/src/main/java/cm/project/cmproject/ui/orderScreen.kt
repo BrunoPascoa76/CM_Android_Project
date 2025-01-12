@@ -104,8 +104,8 @@ fun OrderScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .padding(top = 16.dp, start = 10.dp, end = 10.dp),
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -186,7 +186,7 @@ fun DotsIndicator(
             val color = if (index == selectedIndex) selectedColor else unselectedColor
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(24.dp)
                     .padding(horizontal = 5.dp, vertical = 5.dp)
                     .background(color, shape = CircleShape)
                     .clickable {
@@ -271,7 +271,7 @@ private fun orderPage(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.8f)
+                    .fillMaxHeight(0.85f)
                     .clip(MaterialTheme.shapes.medium)
             ) {
                 OrderMap(
