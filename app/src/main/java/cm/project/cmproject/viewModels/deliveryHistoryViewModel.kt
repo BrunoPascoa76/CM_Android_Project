@@ -44,7 +44,7 @@ class DeliveryHistoryViewModel : ViewModel() {
 
         viewModelScope.launch {
             when (val result =
-                DeliveryRepository().getAllByUserIdAndStatus(userId, listOf("Completed"))) {
+                DeliveryRepository().getAllByUserIdAndStatus(userId, listOf("Delivered"))) {
                 is Result.Success -> {
                     _pastDeliveries.value = result.data
                 }

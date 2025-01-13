@@ -79,7 +79,7 @@ class DeliveryViewModel : ViewModel() {
     }
 
     fun submitQRCode(result: String) {
-        if (_state.value?.deliveryId.toString() == result) {
+        if (_state.value?.deliveryId.toString() == result && _state.value?.status != "Delivered") { //just in case the qr is scanned multiple times
             completeCurrentStep()
         }
     }

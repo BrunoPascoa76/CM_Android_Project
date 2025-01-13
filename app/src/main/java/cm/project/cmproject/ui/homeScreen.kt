@@ -229,7 +229,8 @@ fun PastDeliveriesSection(
                                 )
                                 if (delivery.steps.isNotEmpty()) {
                                     Text(
-                                        delivery.steps[delivery.steps.size - 1].completionDate.toString(),
+                                        delivery.steps[delivery.steps.size - 1].completionDate?.toDate()
+                                            .toString(),
                                         modifier = Modifier.padding(10.dp)
                                     )
                                 }
