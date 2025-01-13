@@ -233,6 +233,7 @@ class DeliveryViewModel : ViewModel() {
                 is Result.Success -> {
                     driverAssignedStep = driverAssignedStep.copy(location = result.data)
                     pickupStep = pickupStep.copy(location = result.data)
+                    inTransitStep = inTransitStep.copy(location = result.data)
                 }
 
                 is Result.Error -> {}
@@ -240,7 +241,6 @@ class DeliveryViewModel : ViewModel() {
 
             when (val result = LocationRepository().getCoordinatesFromAddress(context, toAddress)) {
                 is Result.Success -> {
-                    inTransitStep = inTransitStep.copy(location = result.data)
                     deliveredStep = deliveredStep.copy(location = result.data)
                 }
 

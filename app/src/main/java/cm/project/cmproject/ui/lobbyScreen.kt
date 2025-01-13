@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -137,38 +138,33 @@ fun PendingDeliveryCard(
                 Text("Delivery ID:", fontWeight = FontWeight.Bold)
                 Text(pendingDelivery.deliveryId, fontWeight = FontWeight.Bold)
             }
+            HorizontalDivider(modifier = Modifier
+                .fillMaxWidth()
+                .size(5.dp), thickness = 1.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Recipient Address:", modifier = Modifier.weight(0.4f))
+                Text(
+                    pendingDelivery.toAddress,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(0.6f)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Sender Address:", modifier = Modifier.weight(0.4f))
+                Text(
+                    pendingDelivery.fromAddress,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(0.6f)
+                )
+            }
 
             if (isExpanded) {
-                //they are declared here for efficiency's sake (in hope that only expanded cards will be rebuilt
-                val recipient by pendingDeliveriesViewModel.selectedRecipient.collectAsState()
-                val sender by pendingDeliveriesViewModel.selectedSender.collectAsState()
-                pendingDeliveriesViewModel.fetchRecipientAndSender(pendingDelivery)
-
-
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Recipient Address:", modifier = Modifier.weight(0.3f))
-                    Text(
-                        recipient?.address?.address ?: "Loading...",
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.weight(0.7f)
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Sender Address:", modifier = Modifier.weight(0.3f))
-                    Text(
-                        sender?.address?.address ?: "Loading...",
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.weight(0.7f)
-                    )
-                }
-
                 Button(onClick = {
                     pendingDeliveriesViewModel.assignSelfToDelivery(pendingDelivery, user!!.uid)
                 }) {
