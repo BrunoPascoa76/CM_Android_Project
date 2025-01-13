@@ -4,8 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -95,14 +97,21 @@ fun LobbyScreen(
             )
         }
     } else {
-        LazyColumn {
-            items(pendingDeliveries.size) { index ->
-                val pendingDelivery = pendingDeliveries[index]
-                PendingDeliveryCard(
-                    pendingDeliveriesViewModel = pendingDeliveriesViewModel,
-                    userViewModel = userViewModel,
-                    pendingDelivery = pendingDelivery
-                )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Pending Deliveries", style = MaterialTheme.typography.titleLarge)
+            Spacer(modifier = Modifier.height(10.dp))
+            LazyColumn {
+                items(pendingDeliveries.size) { index ->
+                    val pendingDelivery = pendingDeliveries[index]
+                    PendingDeliveryCard(
+                        pendingDeliveriesViewModel = pendingDeliveriesViewModel,
+                        userViewModel = userViewModel,
+                        pendingDelivery = pendingDelivery
+                    )
+                }
             }
         }
     }
@@ -138,9 +147,11 @@ fun PendingDeliveryCard(
                 Text("Delivery ID:", fontWeight = FontWeight.Bold)
                 Text(pendingDelivery.deliveryId, fontWeight = FontWeight.Bold)
             }
-            HorizontalDivider(modifier = Modifier
-                .fillMaxWidth()
-                .size(5.dp), thickness = 1.dp)
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(5.dp), thickness = 1.dp
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
